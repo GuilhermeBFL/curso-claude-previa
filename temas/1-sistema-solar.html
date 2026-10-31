@@ -436,12 +436,12 @@ function estadoNave(x, y, r, L, t) {
   const [nx, ny] = pos(fi), [ax, ay] = pos(fi + .05);
   return { nx, ny, dir: Math.atan2(ay - ny, ax - nx), frente: Math.sin(fi) >= 0, fi, pos };
 }
-function pintaRastro(c, n, r, alfa) {
-  c.lineCap = 'round';
+function pintaRastro(c, n, r, alfa, z) {
+  c.lineCap = 'butt';
   for (let i = 0; i < 16; i++) {
     const a = n.fi - .1 - i * .11, b = a - .11, [x1, y1] = n.pos(a), [x2, y2] = n.pos(b);
     if (Math.sin(a) < 0 && Math.hypot(x1 - n.cx, y1 - n.cy) < r) continue;
-    c.strokeStyle = `rgba(255,190,110,${alfa * (1 - i / 16) * .85})`; c.lineWidth = Math.max(1, r * .05) * (1 - i / 22);
+    c.strokeStyle = `rgba(255,190,110,${alfa * (1 - i / 16) * .85})`; c.lineWidth = Math.max(1 / z, Math.min(r * .05, 3.4 / z)) * (1 - i / 22);
     c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
   }
 }
@@ -467,7 +467,7 @@ function pintaPlaneta(c, p, x, y, r, ang, t, o) {
   if (p.luas) for (const l of p.luas) pintaLua(c, p, l, x, y, r, ang, t, false);
   if (p.par) pintaLua(c, p, p.par, x, y, r, ang, t, false);
   c.globalAlpha = 1;
-  if (nave && !nave.frente) { pintaRastro(c, nave, r, 1); pintaNave(c, nave.nx, nave.ny, o.nave * .88, nave.dir, t); }
+  if (nave && !nave.frente) { pintaRastro(c, nave, r, 1, z); pintaNave(c, nave.nx, nave.ny, o.nave * .88, nave.dir, t); }
   superficie(c, p, x, y, r, ang, ap ? 1 - ap * .55 : 1);
   if (ap) { c.globalAlpha = ap * .4; c.fillStyle = '#060920'; c.beginPath(); c.arc(x, y, r + .4, 0, TAU); c.fill(); c.globalAlpha = 1 - ap * .34; }
   if (p.anel) metadeAnel(c, p, x, y, r, false);
@@ -476,8 +476,8 @@ function pintaPlaneta(c, p, x, y, r, ang, t, o) {
   c.globalAlpha = 1;
   if (p.est === 'feito') { pintaAnelLuz(c, x, y, r + Math.max(4 / z, r * .2), z); pintaBandeira(c, x, y, r, t, z); }
   if (nave) {
-    if (nave.frente) { pintaRastro(c, nave, r, 1); pintaNave(c, nave.nx, nave.ny, o.nave, nave.dir, t); }
-    pintaEtiquetaVoce(c, nave, o.nave, o.vocePx, z);
+    if (nave.frente) { pintaRastro(c, nave, r, 1, z); pintaNave(c, nave.nx, nave.ny, o.nave, nave.dir, t); }
+    if (z < 1.5 || nave.frente) pintaEtiquetaVoce(c, nave, o.nave, o.vocePx, z);
   }
 }
 /* Céu em camadas, cometas e a estrela */
@@ -886,12 +886,6 @@ function criarSistema() {
   medir();
   CORPOS.forEach(b => pedirTextura(b, 256));
   if (!calmo) setTimeout(() => { esfera(Dhi, 1024); }, 2300);
-  window.__solar = {
-    avancar: s => { tempo += s; sujo = true; },
-    rotulos: () => rot.map(e => ({ n: e.p.n, x: e.x, y: e.y, w: e.w, h: e.h })),
-    planetas: () => PLANETAS.map(p => ({ n: p.n, x: p.sx, y: p.sy, r: p.sr, fora: p.fora })),
-    estrela: () => ({ x: cx, y: cy, r: Restrela }), geo: () => ({ A, B, S })
-  };
   return {
     medir, quadro, voar: iniciarVoo, fontes: medirRotulos,
     noite: on => { alvoBrilho = on ? .72 : 1; sujo = true; },
