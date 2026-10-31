@@ -1,0 +1,16 @@
+{
+  "name": "Do zero ao agente",
+  "short_name": "Zero ao agente",
+  "description": "Curso de programação e Claude",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#15110e",
+  "theme_color": "#15110e",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "img/icone.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "img/icone-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "img/icone-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
