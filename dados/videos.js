@@ -2,7 +2,7 @@ export const VIDEOS = {
  "c1-agente": {
   "id": "c1-agente",
   "titulo": "Agente pessoal: quem faz o quê",
-  "duracao": 130.134,
+  "duracao": 135.722,
   "capitulos": [
    {
     "t": 0,
@@ -37,7 +37,7 @@ export const VIDEOS = {
     "titulo": "E quanto custa"
    },
    {
-    "t": 115,
+    "t": 118.3,
     "titulo": "Resumo"
    }
   ],
@@ -152,7 +152,7 @@ export const VIDEOS = {
    },
    {
     "q": "Claude",
-    "t": "Cada IA cobra pelo que usa, em tokens. Para tarefa simples, um agente só já resolve. Vários agentes só valem a pena em trabalho grande."
+    "t": "Pela API, cada IA cobra pelo que usa, em tokens. Na assinatura, gasta o limite do plano. Para tarefa simples, uma conversa já resolve. Vários agentes só valem a pena em trabalho grande."
    },
    {
     "q": "Gui",
@@ -160,14 +160,14 @@ export const VIDEOS = {
    },
    {
     "q": "Claude",
-    "t": "Perfeito! Agora lê o texto da aula, porque é lá que você monta o seu."
+    "t": "Perfeito! Agora lê o texto da aula e veja um agente trabalhando. O seu, você monta no projeto final."
    }
   ]
  },
  "c2-git": {
   "id": "c2-git",
   "titulo": "Git e GitHub, do zero",
-  "duracao": 118.77,
+  "duracao": 123.538,
   "capitulos": [
    {
     "t": 0,
@@ -186,15 +186,15 @@ export const VIDEOS = {
     "titulo": "O caminho paralelo: branch"
    },
    {
-    "t": 81.9,
+    "t": 83.3,
     "titulo": "Os comandos"
    },
    {
-    "t": 89,
+    "t": 90.4,
     "titulo": "A regra de ouro"
    },
    {
-    "t": 104,
+    "t": 108.8,
     "titulo": "Resumo"
    }
   ],
@@ -269,7 +269,7 @@ export const VIDEOS = {
    },
    {
     "q": "Git",
-    "t": "Deu certo? Você junta na principal: isso é o merge. Deu errado? Joga fora e ninguém viu."
+    "t": "Deu certo? Você junta na principal: isso é o merge. Deu errado? Joga fora, e a principal continua intacta."
    },
    {
     "q": "Gui",
@@ -289,7 +289,7 @@ export const VIDEOS = {
    },
    {
     "q": "Git",
-    "t": "Exato. O que está nessa lista, eu finjo que não vejo."
+    "t": "Exato. Arquivo novo nessa lista, eu finjo que não vejo. O que já entrou em commit, não adianta."
    },
    {
     "q": "Gui",
@@ -309,40 +309,40 @@ export const VIDEOS = {
    ],
    "c": 1,
    "e": "O commit fica no seu computador. Quem manda para o GitHub é o push.",
-   "t": 103.9
+   "t": 108.7
   }
  },
  "c3-skill-mcp": {
   "id": "c3-skill-mcp",
   "titulo": "Skill x MCP: qual é a diferença",
-  "duracao": 109.277,
+  "duracao": 112.386,
   "capitulos": [
    {
     "t": 0,
     "titulo": "O que é uma skill"
    },
    {
-    "t": 36.3,
+    "t": 37.7,
     "titulo": "O que é um MCP"
    },
    {
-    "t": 56.3,
+    "t": 57.8,
     "titulo": "A diferença"
    },
    {
-    "t": 63.5,
+    "t": 65,
     "titulo": "Os dois juntos"
    },
    {
-    "t": 73.7,
+    "t": 75.2,
     "titulo": "O que pode dar errado"
    },
    {
-    "t": 88.5,
+    "t": 91.6,
     "titulo": "Qual criar"
    },
    {
-    "t": 99.1,
+    "t": 102.2,
     "titulo": "Resumo"
    }
   ],
@@ -365,7 +365,7 @@ export const VIDEOS = {
    },
    {
     "q": "Claude",
-    "t": "Basicamente. Um arquivo de instruções, às vezes com scripts e modelos junto. E eu só abro esse manual quando a tarefa pede."
+    "t": "Quase. É um arquivo de instruções, às vezes com scripts junto, e script roda de verdade. E eu só abro esse manual quando a tarefa pede."
    },
    {
     "q": "Gui",
@@ -373,7 +373,7 @@ export const VIDEOS = {
    },
    {
     "q": "Claude",
-    "t": "Pela descrição que fica no topo. Descrição ruim, eu não abro. Esse é o problema número um de skill que não dispara."
+    "t": "Pela descrição que fica no topo. Descrição ruim, eu não abro. É a primeira coisa a olhar quando uma skill não dispara."
    },
    {
     "q": "MCP",
@@ -385,7 +385,7 @@ export const VIDEOS = {
    },
    {
     "q": "Claude",
-    "t": "Manual ensina, mas manual não abre a sua agenda. Para eu alcançar agenda, e-mail, banco de dados, eu preciso de um cabo. Esse cabo é o MCP."
+    "t": "Manual ensina, mas manual não abre a sua agenda. Para eu alcançar agenda, e-mail, banco de dados, eu preciso de uma tomada. Essa tomada é o MCP."
    },
    {
     "q": "MCP",
@@ -405,7 +405,7 @@ export const VIDEOS = {
    },
    {
     "q": "Claude",
-    "t": "Você pede: marca minha prova na agenda. A sua skill diz como você gosta do lembrete. O MCP da agenda é a mão que cria o evento."
+    "t": "Você pede: marca minha prova na agenda. A sua skill diz como você gosta do lembrete. O MCP da agenda é o que cria o evento."
    },
    {
     "q": "Gui",
@@ -417,7 +417,7 @@ export const VIDEOS = {
    },
    {
     "q": "Claude",
-    "t": "Skill também. Instalar skill de estranho é me entregar instruções de um estranho. Leia antes de instalar."
+    "t": "Skill também. Skill de estranho traz instruções, e até scripts, de um estranho. Trate como instalar um programa: leia antes."
    },
    {
     "q": "Gui",
@@ -440,7 +440,7 @@ export const VIDEOS = {
  "s1-html-word-pdf": {
   "id": "s1-html-word-pdf",
   "titulo": "HTML, Word e PDF",
-  "duracao": 50.768,
+  "duracao": 51.352,
   "capitulos": [
    {
     "t": 0,
@@ -502,14 +502,14 @@ export const VIDEOS = {
    },
    {
     "q": "",
-    "t": "Então: escrevendo e mudando? Word. Entregando, sem ninguém mexer? PDF. Abrindo num link, com interação? HTML."
+    "t": "Então: escrevendo e mudando? Word. Entregando, com a aparência fixa? PDF. Abrindo no navegador, com interação? HTML."
    }
   ]
  },
  "s2-chave-api": {
   "id": "s2-chave-api",
   "titulo": "Como proteger uma chave de API",
-  "duracao": 47.515,
+  "duracao": 50.009,
   "capitulos": [
    {
     "t": 0,
@@ -520,19 +520,19 @@ export const VIDEOS = {
     "titulo": "Regra 1: fora do código"
    },
    {
-    "t": 10.8,
+    "t": 11.7,
     "titulo": "Regra 2: fora do GitHub"
    },
    {
-    "t": 19.6,
+    "t": 21.7,
     "titulo": "Regra 3: nunca no site"
    },
    {
-    "t": 31,
+    "t": 33.6,
     "titulo": "Regra 4: limite de gasto"
    },
    {
-    "t": 37.9,
+    "t": 40.5,
     "titulo": "Se vazar"
    }
   ],
@@ -543,11 +543,11 @@ export const VIDEOS = {
    },
    {
     "q": "",
-    "t": "Regra um: a chave nunca fica no código. Ela fica num arquivo separado, chamado ponto env."
+    "t": "Regra um: a chave nunca fica no código. Ela fica num arquivo separado, o ponto env, que o programa carrega."
    },
    {
     "q": "",
-    "t": "Regra dois: esse arquivo entra na lista do gitignore. Assim, ele nunca sobe para o GitHub, onde robôs procuram chaves o tempo todo."
+    "t": "Regra dois: esse arquivo entra na lista do gitignore, antes do primeiro commit. Assim, ele não sobe para o GitHub, onde robôs procuram chaves o tempo todo."
    },
    {
     "q": "",
@@ -555,7 +555,7 @@ export const VIDEOS = {
    },
    {
     "q": "",
-    "t": "Quem guarda é o servidor. O site só faz a pergunta, e o servidor assina e manda."
+    "t": "Quem guarda é o servidor. O site só faz a pergunta, e o servidor acrescenta a chave e envia."
    },
    {
     "q": "",
@@ -563,14 +563,14 @@ export const VIDEOS = {
    },
    {
     "q": "",
-    "t": "E se vazar? Apagar do código não resolve, porque ela continua no histórico. Crie outra chave, revogue a antiga e confira o gasto."
+    "t": "E se vazar? Apagar do código não resolve, porque ela continua no histórico. Revogue a antiga, crie outra chave e confira o gasto."
    }
   ]
  },
  "s3-biblioteca": {
   "id": "s3-biblioteca",
   "titulo": "Como escolher uma biblioteca",
-  "duracao": 53.293,
+  "duracao": 56.951,
   "capitulos": [
    {
     "t": 0,
@@ -578,26 +578,26 @@ export const VIDEOS = {
    },
    {
     "t": 12.9,
-    "titulo": "1. Resolve o problema?"
+    "titulo": "1. É a original?"
    },
    {
-    "t": 18.7,
-    "titulo": "2. Está viva?"
+    "t": 20.8,
+    "titulo": "2. Resolve o problema?"
    },
    {
-    "t": 26,
-    "titulo": "3. Muita gente usa?"
+    "t": 26.7,
+    "titulo": "3. Está viva?"
    },
    {
-    "t": 32.1,
-    "titulo": "4. Documentação clara?"
+    "t": 34,
+    "titulo": "4. Muita gente usa?"
    },
    {
-    "t": 37.3,
-    "titulo": "5. É a original?"
+    "t": 40.1,
+    "titulo": "5. Documentação clara?"
    },
    {
-    "t": 44.5,
+    "t": 48.1,
     "titulo": "Na dúvida"
    }
   ],
@@ -616,23 +616,23 @@ export const VIDEOS = {
    },
    {
     "q": "",
-    "t": "Um: ela resolve exatamente o meu problema? Não instale um canhão para matar uma formiga."
+    "t": "Um: é a original? Golpistas publicam pacotes com nome quase igual. Confira letra por letra, antes de instalar."
    },
    {
     "q": "",
-    "t": "Dois: ela está viva? Olhe a data da última atualização. Projeto abandonado acumula falha de segurança."
+    "t": "Dois: ela resolve exatamente o meu problema? Não instale um canhão para matar uma formiga."
    },
    {
     "q": "",
-    "t": "Três: muita gente usa? Mais gente significa mais exemplos, e erro resolvido mais rápido."
+    "t": "Três: ela está viva? Olhe a data da última atualização. Projeto abandonado acumula falha de segurança."
    },
    {
     "q": "",
-    "t": "Quatro: a documentação é clara? Se nem o exemplo inicial funciona, fuja."
+    "t": "Quatro: muita gente usa? Mais gente significa mais exemplos, e erro resolvido mais rápido."
    },
    {
     "q": "",
-    "t": "Cinco: é a original? Golpistas publicam pacotes com nome quase igual. Confira letra por letra."
+    "t": "Cinco: a documentação é clara? Leia o exemplo inicial. Se você instalou, rodou e nem ele funciona, desconfie."
    },
    {
     "q": "",

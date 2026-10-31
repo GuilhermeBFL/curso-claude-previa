@@ -1,0 +1,1019 @@
+<!doctype html>
+<html lang="pt-BR" data-leitura="noite" data-fosforo="verde">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Do zero ao agente: terminal antigo</title>
+<meta name="theme-color" content="#cfc6af">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" id="fontes" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,700&family=VT323&display=swap">
+<style>
+@font-face{font-family:"VT323 reserva";src:local("Consolas"),local("Cascadia Mono"),local("Menlo"),local("DejaVu Sans Mono"),local("Roboto Mono"),local("Courier New");size-adjust:68%}
+/* Cores e fontes que o kit lê */
+:root{
+  --k-topo-fundo:#c9c0a9;--k-topo-texto:#1d1a12;--k-acento:#5dff94;--k-acento-texto:#04110a;
+  --k-painel-fundo:#06140c;--k-painel-texto:#d9ffe5;--k-linha:#1d5a37;
+  --k-titulo:VT323,"VT323 reserva",monospace;
+  --k-texto:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --k-raio:5px;
+  --k-leitura-fundo:#f3f6ee;--k-leitura-texto:#17231b;--k-leitura-caixa:#e3ead9;
+  --k-leitura-fundo-noite:#0b1510;--k-leitura-texto-noite:#e4f2e8;--k-leitura-caixa-noite:#15261c;
+  /* Fósforo verde */
+  --preto:#04110a;--alta:#d6ffe2;--luz:#5dff94;--media:#66e39a;--baixa:#22794c;--tecla:#0a2616;--tecla-lado:#1f8a52;
+  --halo:rgba(93,255,148,.42);--halo-sala:rgba(60,255,135,.26);--acento-claro:#0a6d39;--arte-sombra:rgba(93,255,148,.2);
+  /* Sala e plástico, à noite */
+  --parede:#101d17;--parede-fim:#040806;--mesa-a:#2b241a;--mesa-b:#120e09;
+  --beg:#bcb39c;--beg-cl:#d2c9b2;--beg-es:#9d957f;--beg-txt:#2a2615;
+}
+html[data-fosforo="ambar"]{
+  --k-acento:#ffb833;--k-acento-texto:#120a02;--k-painel-fundo:#140c03;--k-painel-texto:#ffeccd;--k-linha:#6a4714;
+  --k-leitura-fundo-noite:#161009;--k-leitura-texto-noite:#f6ead6;--k-leitura-caixa-noite:#261b0e;
+  --preto:#120a02;--alta:#ffeccd;--luz:#ffb833;--media:#f0ac40;--baixa:#8d601b;--tecla:#2a1b06;--tecla-lado:#a8721a;
+  --halo:rgba(255,184,51,.42);--halo-sala:rgba(255,165,40,.26);--acento-claro:#8a5600;--arte-sombra:rgba(255,184,51,.2);
+  --parede:#1e150a;--parede-fim:#070502;
+}
+html[data-fosforo="ambar"]:not([data-leitura="noite"]){--k-leitura-fundo:#f8f3e8;--k-leitura-texto:#241b0e;--k-leitura-caixa:#efe5d2}
+html[data-leitura="dia"]{
+  --k-topo-fundo:#ddd5c0;--parede:#aeb5a6;--parede-fim:#858d80;--mesa-a:#8d775b;--mesa-b:#6b5742;--halo-sala:rgba(93,255,148,.07);
+  --beg:#d9d1bb;--beg-cl:#eee7d5;--beg-es:#a9a18b;
+}
+html[data-leitura="dia"][data-fosforo="ambar"]{--halo-sala:rgba(255,184,51,.07);--parede:#b6b09f;--parede-fim:#8d8778}
+
+/* Base: celular primeiro. A tela ocupa tudo e a página rola. */
+html{font-size:clamp(9px,2.564vmin,12px);background:var(--preto);-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;background:var(--preto);font-family:var(--k-texto);font-synthesis:none}
+.monitor,.monitor *,.sala *{box-sizing:border-box}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.sala,.penumbra,.queixo,.base{display:none}
+.gabinete,.moldura,.tubo,.tubo-in{display:contents}
+
+.tela{position:relative;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;padding-top:var(--k-topo-h);font-family:var(--k-titulo);font-size:2.4rem;line-height:1.12;color:var(--luz);text-shadow:0 0 .22em var(--halo);background:var(--preto)}
+.log{flex:1 1 auto;min-width:0;padding:1.2rem 1.4rem 2rem}
+.titulo{display:flex;flex-wrap:wrap;align-items:flex-start;row-gap:calc(var(--arte,12px)*.7);column-gap:calc(var(--arte,12px)*1.2);margin:0 0 .4rem;padding-bottom:.5rem;width:100%;color:var(--luz)}
+.titulo pre{margin:0;font:inherit;font-size:var(--arte,12px);line-height:.64;white-space:pre;transform-origin:0 0;text-shadow:0 0 .45em var(--halo)}
+.titulo pre:first-child{flex-basis:100%}
+.fantasma{position:absolute;left:0;top:0;margin:0;font-family:var(--k-titulo);line-height:.64;white-space:pre;transform-origin:0 0;color:var(--luz);opacity:.3;transition:opacity .5s linear;pointer-events:none;z-index:1}
+.bloco{margin:0 0 .9rem}
+.eco{margin:0 0 .4rem;color:var(--alta);overflow-wrap:anywhere}
+.eco .ps,.nota .ps{color:var(--media)}
+.saida{margin:.2rem 0;overflow-wrap:anywhere}
+.saida.fraca,.nota{color:var(--media)}
+.nota{margin:.7rem 0 0;overflow-wrap:anywhere}
+.nota .cmd{color:var(--alta)}
+.lista{list-style:none;margin:0;padding:0}
+
+/* Linha de módulo: saída do ls, em colunas exatas de caractere */
+.mod,.tecla,.linha-cmd{-webkit-user-select:none;user-select:none}
+.mod{display:grid;grid-template-columns:5ch 3ch minmax(0,1fr);grid-template-areas:"tag num nome" ". . bar";align-items:center;row-gap:.55rem;width:100%;min-height:5.8rem;padding:.7rem .5ch;margin:0;font:inherit;font-size:2.6rem;line-height:1;color:var(--luz);text-shadow:inherit;text-align:left;background:none;border:0;border-radius:.3rem;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;--vazio:var(--baixa)}
+.mod .tag{grid-area:tag;white-space:pre}.mod .num{grid-area:num}.mod .nome{grid-area:nome;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blocos{grid-area:bar;position:relative;display:block;height:.56em;width:calc(var(--t)*1ch - .22ch);background:repeating-linear-gradient(90deg,transparent 0 .78ch,var(--vao,var(--preto)) .78ch 1ch),repeating-linear-gradient(0deg,var(--vazio) 0 2px,transparent 2px 4px)}
+.blocos i{display:block;height:100%;width:max(0px,calc(var(--f)*1ch - .22ch));background:repeating-linear-gradient(90deg,currentColor 0 .78ch,var(--vao,var(--preto)) .78ch 1ch)}
+.mod.feito .tag{color:var(--alta)}
+.mod.futuro{color:var(--media)}
+.mod.atual{background:var(--alta);color:var(--preto);text-shadow:none;box-shadow:0 0 1.6rem var(--halo);--vazio:rgba(0,0,0,.26);--vao:var(--alta)}
+.mod.atual .blocos::after{content:"";position:absolute;left:0;top:0;width:.78ch;height:100%;background:currentColor;animation:piscar 1.06s steps(1) infinite}
+.mod:focus-visible,.mod.apertada{background:var(--luz);color:var(--preto);text-shadow:none;--vazio:rgba(0,0,0,.3);--vao:var(--luz)}
+.mod:focus-visible .tag,.mod.apertada .tag{color:inherit}
+.mod:focus-visible{outline:.3rem solid var(--preto);outline-offset:-.5rem}
+
+/* Linhas tocáveis da ajuda */
+.linha-cmd{display:grid;grid-template-columns:11ch minmax(0,1fr);align-items:center;width:100%;min-height:44px;padding:.3rem .5ch;margin:0;font:inherit;line-height:1.05;color:var(--luz);text-shadow:inherit;text-align:left;background:none;border:0;border-radius:.3rem;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.linha-cmd b{font-weight:400;color:var(--alta)}
+.linha-cmd:focus-visible{background:var(--luz);color:var(--preto);text-shadow:none}
+.linha-cmd:focus-visible b{color:inherit}
+.linha-cmd:focus-visible{outline:.3rem solid var(--preto);outline-offset:-.5rem}
+
+/* Doca: teclas físicas e prompt, presos embaixo */
+.doca{position:sticky;bottom:var(--teclado,0px);z-index:2;display:flex;flex-direction:column;gap:.7rem;padding:.8rem 1.2rem calc(66px + env(safe-area-inset-bottom));background:var(--preto);box-shadow:0 -1.4rem 1.6rem -.6rem var(--preto)}
+.teclas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:1rem .6rem;align-items:center}
+.tecla{display:grid;place-content:center;justify-items:center;min-height:5.4rem;min-width:0;padding:.3rem .2rem;margin:0 0 .5rem;font:inherit;font-size:2.4rem;line-height:.95;color:var(--alta);text-shadow:inherit;background:linear-gradient(#123a23,var(--tecla));border:.15rem solid var(--media);border-radius:.6rem;box-shadow:0 .5rem 0 var(--tecla-lado),0 .7rem 1rem rgba(0,0,0,.6);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .05s linear,box-shadow .05s linear}
+html[data-fosforo="ambar"] .tecla{background:linear-gradient(#40290a,var(--tecla))}
+.tecla b{font-weight:400}
+.tecla small{font-size:.78em;color:var(--alta)}
+.tecla.forte,html[data-fosforo="ambar"] .tecla.forte{grid-column:1/-1;min-height:5.4rem;padding:.3rem .6rem;font-size:2.55rem;color:var(--preto);text-shadow:none;background:var(--luz);border-color:var(--alta);box-shadow:0 .5rem 0 var(--tecla-lado),0 0 2.2rem var(--halo)}
+.tecla:active,.tecla.apertada{transform:translateY(.4rem);box-shadow:0 .1rem 0 var(--tecla-lado)}
+.tecla.forte:active,.tecla.forte.apertada{box-shadow:0 .1rem 0 var(--tecla-lado),0 0 1.2rem var(--halo)}
+.tecla.sugerida{border-color:var(--alta);box-shadow:0 .5rem 0 var(--tecla-lado),0 0 1.6rem var(--halo)}
+.tecla:focus-visible{outline:.3rem solid var(--alta);outline-offset:.2rem}
+.mascote{margin:0 0 0 .2rem;font:inherit;font-size:1.45rem;line-height:.96;white-space:pre;color:var(--luz);align-self:center}
+
+.prompt{display:flex;align-items:center;gap:1ch;min-height:4.8rem;margin:0;padding:0 .5ch;font-size:2.6rem;line-height:1;border-radius:.3rem}
+.prompt:focus-within{box-shadow:inset 0 0 0 .2rem var(--media)}
+.ps1{flex:none;color:var(--luz);white-space:nowrap;cursor:text}
+.campo{position:relative;flex:1 1 auto;min-width:0;align-self:stretch}
+#cmd{position:absolute;inset:0;width:100%;height:100%;min-height:44px;margin:0;padding:0;font:inherit;color:var(--alta);text-shadow:inherit;caret-color:transparent;background:transparent;border:0;border-radius:0;outline:0;-webkit-appearance:none;appearance:none}
+.cursor{position:absolute;left:0;top:50%;width:1ch;height:1.04em;margin-top:-.56em;background:var(--luz);box-shadow:0 0 .5em var(--halo);opacity:.9;pointer-events:none;animation:piscar 1.06s steps(1) infinite}
+.dica{position:absolute;left:1.5ch;right:0;top:50%;transform:translateY(-50%);color:var(--media);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+@keyframes piscar{0%,54%{opacity:1}55%,100%{opacity:.1}}
+
+/* Boot */
+.boot{position:fixed;top:var(--k-topo-h);left:0;right:0;z-index:3;padding:1.2rem 1.6rem;font-family:var(--k-titulo);font-size:2.3rem;line-height:1.14;color:var(--luz);text-shadow:0 0 .3em var(--halo);pointer-events:none;white-space:pre-wrap}
+.boot p{margin:0}
+.boot mark{padding:0 .6ch;color:var(--preto);background:var(--alta);text-shadow:none}
+.boot-dica{position:fixed;left:0;right:0;bottom:78px;z-index:3;display:none;font-family:var(--k-titulo);font-size:2.1rem;text-align:center;color:var(--media);pointer-events:none}
+.so-boot .boot-dica{display:block}
+.so-boot .eco-ls,.so-boot .lista,.so-boot .nota,.so-boot .titulo pre{visibility:hidden}
+.so-boot .titulo pre.vis{visibility:visible}
+.titulo pre.riscando{animation:riscar .24s steps(5,end) both}
+@keyframes riscar{from{clip-path:inset(0 -1em 100% -1em)}to{clip-path:inset(-1em)}}
+.sem-doca .doca{visibility:hidden}
+.desligado .tela,.desligado .boot,.desligado .boot-dica{visibility:hidden}
+.cascata .lista{animation:imprimir .3s steps(18,end) both}
+@keyframes imprimir{from{clip-path:inset(0 -3rem 100% -3rem)}to{clip-path:inset(-3rem)}}
+.cascata .nota{animation:depois 0s .3s both}
+@keyframes depois{from{visibility:hidden}to{visibility:visible}}
+.surge .tecla{animation:tecla-sobe .17s cubic-bezier(.2,.9,.3,1.25) both;animation-delay:calc(var(--i)*32ms)}
+@keyframes tecla-sobe{from{opacity:0;transform:translateY(1rem)}to{opacity:1;transform:none}}
+
+/* Vidro do tubo: varredura, vinheta, reflexo, faixa que rola, tremulação e clarão */
+.fx{position:fixed;left:0;right:0;top:var(--k-topo-h);bottom:0;z-index:30;display:block;pointer-events:none}
+.vidro{background:radial-gradient(85% 40% at 18% 0,rgba(255,255,255,.07),transparent 70%),radial-gradient(ellipse at center,transparent 62%,rgba(0,0,0,.34) 100%),repeating-linear-gradient(0deg,rgba(0,0,0,.2) 0 1px,transparent 1px 3px);box-shadow:inset 0 0 3rem rgba(0,0,0,.55);animation:tremer .19s steps(1) infinite;will-change:opacity}
+.rolo{bottom:auto;height:22vh;background:linear-gradient(transparent,var(--halo-sala),transparent);opacity:.42;transform:translateY(-30vh);animation:rolar 9s linear infinite;will-change:transform}
+@keyframes rolar{to{transform:translateY(110vh)}}
+@keyframes tremer{0%{opacity:1}34%{opacity:.9}67%{opacity:.96}}
+.clarao{display:none;z-index:31;background:radial-gradient(ellipse at center,#fff 0,var(--alta) 55%,var(--luz) 100%)}
+.ligando .clarao,.clarao.pulso{display:block}
+.desligado .rolo,.so-boot .rolo{visibility:hidden}
+.desligado .vidro,.so-boot .vidro{animation:none}
+.ligando .clarao{animation:ligar .62s cubic-bezier(.2,.6,.3,1) both}
+@keyframes ligar{0%{opacity:1;transform:scale(.03,.004)}20%{opacity:1;transform:scale(1,.005)}44%{opacity:1;transform:scale(1,1)}58%{opacity:.86}100%{opacity:0;transform:scale(1,1)}}
+.clarao.pulso{animation:pulso .2s linear both}
+.clarao.fecha{display:block;animation:fechar .36s cubic-bezier(.6,0,.9,.4) both}
+@keyframes fechar{0%{opacity:0;transform:scale(1,.7)}45%{opacity:1;transform:scale(1,.006)}88%{opacity:1;transform:scale(.03,.006)}100%{opacity:0;transform:scale(0,0)}}
+@keyframes pulso{0%{opacity:0}30%{opacity:.26}100%{opacity:0}}
+.tela.desmag{animation:desmag .46s linear both}
+@keyframes desmag{0%{transform:none}10%{transform:skewX(2.4deg) scale(1.012)}22%{transform:skewX(-1.8deg) scale(.994)}36%{transform:skewX(1.1deg)}50%{transform:skewX(-.7deg)}66%{transform:skewX(.35deg)}100%{transform:none}}
+.tela.apagando{transform-origin:50% 50vh;animation:apagar .34s cubic-bezier(.6,0,.9,.4) both}
+@keyframes apagar{0%{transform:none}60%{transform:scale(1,.006)}88%{transform:scale(.03,.006)}100%{transform:scale(0,0);visibility:hidden}}
+
+/* Barra de cima: o que sobra de plástico no celular */
+.k-topo{box-shadow:0 2px 0 rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.4);font-weight:400}
+.k-marca{display:inline-flex;align-items:center;min-height:44px;font-size:23px;font-weight:400}
+.k-bt,.k-nav button{min-height:44px;min-width:44px}
+.k-topo :focus-visible,.k-aula-barra :focus-visible{outline-color:#0a3b22;outline-offset:1px}
+.k-nav button[aria-current="page"]{box-shadow:inset 0 -3px 0 currentColor}
+.bt-fosforo-topo{display:inline-flex;align-items:center;gap:6px;padding:0 9px}
+.bt-fosforo-topo::before{content:"";width:9px;height:9px;border-radius:50%;background:#ffb833;box-shadow:0 0 0 1px rgba(0,0,0,.45)}
+.bt-fosforo-topo[aria-pressed="true"]{background:rgba(0,0,0,.14);box-shadow:inset 0 2px 3px rgba(0,0,0,.35)}
+.k-troca{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(0,0,0,.9)}
+.k-troca a{height:44px;min-width:44px}
+.digitando .k-troca{display:none}
+.digitando .doca{padding-bottom:.6rem}
+
+/* Painel do módulo: mesma tela, outro comando */
+.k-painel{border-left:6px solid var(--k-topo-fundo);box-shadow:-20px 0 60px rgba(0,0,0,.6)}
+.eco-painel{padding:16px 22px 0;font:21px/1.1 var(--k-titulo);color:var(--media);overflow-wrap:anywhere}
+.k-painel header{padding-top:8px}
+.k-painel h2{font-weight:400;font-size:38px;line-height:1;color:var(--alta);text-shadow:0 0 .3em var(--halo)}
+.k-painel p{opacity:1;font-size:16px}
+.k-aulas button{align-items:center;gap:10px;min-height:48px;padding:9px 10px;font-family:var(--k-titulo);font-size:23px;line-height:1.08}
+.k-aulas button:focus-visible{background:var(--luz);color:var(--preto)}
+.k-aulas button:focus-visible .id,.k-aulas button:focus-visible .st{color:inherit}
+.k-aulas button:focus-visible{outline-color:var(--alta);outline-offset:-3px}
+.k-aulas .id{flex:0 0 4.5ch;font-size:inherit;opacity:1;padding:0;color:var(--media)}
+.k-aulas .st{flex:0 0 4ch;white-space:pre;color:var(--media)}
+.k-aulas .st.ok{color:var(--alta)}
+.k-aulas .st.vai{color:var(--preto);background:var(--alta);text-align:center}
+
+/* Aula: fonte de leitura normal, título do terminal */
+.k-aula h1,.k-aula h2,.k-aula h3,.k-aula-barra strong{font-weight:400}
+.k-aula h1{font-size:clamp(40px,6vw,62px);line-height:1}
+.k-aula h2{font-size:clamp(29px,3.4vw,35px);line-height:1.05}
+.k-caixa h3{font-size:25px}
+.k-aula-barra strong{font-size:23px;line-height:1}
+.k-aula-corpo p{max-width:68ch}
+html:not([data-leitura="noite"]) .k-aula{--k-acento:var(--acento-claro);--k-acento-texto:#fff;color-scheme:light}
+
+/* PC: o monitor inteiro sobre a mesa. Tudo escala junto a partir da altura da janela. */
+@media (min-width:981px) and (min-height:620px){
+  html{--m:min(calc(100vh - 136px),calc((100vw - 40px)/1.475),1160px);font-size:calc(var(--m)/71.6)}
+  body{height:100vh;overflow:hidden}
+  .sala{position:fixed;inset:0;z-index:0;display:block;overflow:hidden;background:radial-gradient(90% 90% at 50% 42%,var(--parede),var(--parede-fim))}
+  .luz{position:absolute;left:50%;top:46%;width:calc(var(--m)*2.3);height:calc(var(--m)*1.7);background:radial-gradient(closest-side,var(--halo-sala),transparent);opacity:1;transform:translate(-50%,-50%)}
+  .desligado .luz{opacity:0}
+  .ligando .luz{animation:sala-acende .75s ease-out both}
+  @keyframes sala-acende{0%,30%{opacity:0}44%{opacity:1;transform:translate(-50%,-50%) scale(1.4);filter:brightness(2.6)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+  .mesa{position:absolute;left:0;right:0;bottom:0;height:66px;background:linear-gradient(var(--mesa-a),var(--mesa-b));box-shadow:inset 0 2px 0 rgba(255,255,255,.07),0 -8px 26px rgba(0,0,0,.45)}
+  .mesa::after{content:"";position:absolute;left:50%;top:0;width:calc(var(--m)*1.5);height:100%;transform:translateX(-50%);background:radial-gradient(50% 100% at 50% 0,var(--halo-sala),transparent)}
+  .penumbra{position:fixed;inset:0;z-index:2;display:block;background:#000;opacity:0;pointer-events:none;transition:opacity .35s}
+  .desligado .penumbra{opacity:.5}
+
+  .monitor{position:fixed;z-index:1;left:50%;bottom:74px;width:calc(var(--m)*1.475);height:var(--m);transform:translateX(-50%)}
+  .gabinete{position:relative;display:flex;flex-direction:column;height:100%;padding:1.5rem 2.2rem 0;border-radius:2.2rem 2.2rem 1.1rem 1.1rem;background:linear-gradient(170deg,var(--beg-cl),var(--beg) 42%,var(--beg-es));box-shadow:inset 0 .25rem 0 rgba(255,255,255,.5),inset .25rem 0 0 rgba(255,255,255,.18),inset -.3rem 0 .4rem rgba(0,0,0,.18),inset 0 -.4rem .5rem rgba(0,0,0,.25),0 .6rem 3.6rem rgba(0,0,0,.6)}
+  .gabinete::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.5;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E")}
+  .moldura{position:relative;display:block;flex:1 1 auto;min-height:0;border:1.1rem solid;border-color:#6d6754 #89826d #a9a18a #89826d;border-radius:1.8rem;background:#000;box-shadow:0 0 0 .15rem rgba(0,0,0,.28),0 .12rem 0 .15rem rgba(255,255,255,.28)}
+  .moldura::before{content:"";position:absolute;inset:-1.1rem;border-radius:1.8rem;pointer-events:none;box-shadow:inset 0 0 2.2rem var(--halo-sala)}
+  html[data-leitura="dia"] .moldura{border-color:#827b67 #a39c86 #c7bfa8 #a39c86}
+  .tubo{display:block;height:100%;overflow:hidden;border-radius:50%/2.6%;background:#000}
+  .tubo-in{position:relative;display:block;height:100%;overflow:hidden;isolation:isolate;border-radius:1.9%/50%;background:var(--preto)}
+  .tela{position:absolute;inset:0;min-height:0;padding:1.1rem 2.8rem 1rem;background:none;text-shadow:0 0 .3em var(--halo)}
+  .log{padding:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--baixa) transparent}
+  .titulo{flex-wrap:nowrap;margin-bottom:.1rem;padding-bottom:.6rem;width:calc(100% - 8.5rem)}
+  .titulo pre:first-child{flex-basis:auto}
+  .so-boot .titulo pre.vis{text-shadow:0 0 .45em var(--halo),.8em .64em 0 var(--arte-sombra)}
+  .lista{display:grid;grid-auto-flow:column;grid-template-rows:repeat(9,auto);grid-template-columns:repeat(2,minmax(0,1fr));column-gap:2rem}
+  .cascata .lista{animation-timing-function:steps(9,end)}
+  .eco{margin-bottom:.1rem}
+  .bloco{margin-bottom:.5rem}
+  .bloco:last-child{margin-bottom:0}
+  .mod{grid-template-columns:5ch 3ch 22ch minmax(0,1fr);grid-template-areas:"tag num nome bar";min-height:4.3rem;padding:0 .5ch;font-size:2.5rem;row-gap:0}
+  .nota{margin-top:.2rem}
+  .doca{position:static;gap:.4rem;padding:.3rem 0 0;background:none;box-shadow:none}
+  .teclas{display:flex;gap:1rem}
+  .tecla{flex:1 1 0;min-height:4.5rem;margin-bottom:.4rem}
+  .tecla.forte,html[data-fosforo="ambar"] .tecla.forte{flex:2.9 1 0;min-height:4.5rem;font-size:2.6rem}
+  .tecla small{font-size:.76em}
+  .mascote{position:absolute;top:.8rem;right:2.6rem;margin:0;font-size:2.1rem;line-height:.9}
+  .prompt{min-height:4.2rem;margin:0 .5rem;font-size:2.5rem}
+  .boot{position:absolute;top:0;padding:1.6rem 2.8rem;font-size:2.5rem}
+  .boot-dica{position:absolute;bottom:2rem;font-size:2.2rem}
+  .fx{position:absolute;inset:0;z-index:5}
+  .vidro{--reflexo:rgba(255,255,255,.1);--reflexo2:rgba(255,255,255,.035);background:radial-gradient(70% 46% at 20% 0,var(--reflexo),transparent 70%),radial-gradient(40% 20% at 86% 100%,var(--reflexo2),transparent 70%),radial-gradient(ellipse at center,transparent 58%,rgba(0,0,0,.3) 86%,rgba(0,0,0,.62) 100%),repeating-linear-gradient(0deg,rgba(0,0,0,.2) 0 1px,transparent 1px 3px);box-shadow:inset 0 0 5rem rgba(0,0,0,.6),inset 0 0 .6rem rgba(0,0,0,.8)}
+  html[data-leitura="dia"] .vidro{--reflexo:rgba(255,255,255,.17);--reflexo2:rgba(255,255,255,.06)}
+  .rolo{top:0;bottom:auto;height:30%;transform:translateY(-110%);animation-name:rolar-pc}
+  @keyframes rolar-pc{to{transform:translateY(360%)}}
+  .clarao{z-index:6}
+
+  /* Queixo do gabinete */
+  .queixo{position:relative;display:flex;flex:none;align-items:center;gap:2rem;height:4.8rem;padding:0 .3rem}
+  .emblema{display:grid;gap:.1rem;color:var(--beg-txt);text-shadow:0 .1rem 0 rgba(255,255,255,.35);line-height:1}
+  .emblema b{font-size:2.1rem;font-style:italic;font-weight:700;letter-spacing:-.01em}
+  .emblema span{font-size:1.1rem;font-weight:600}
+  .dymo{margin:0 auto;padding:.55rem 1.4rem .5rem;font:600 1.45rem/1 var(--k-texto);letter-spacing:.09em;color:#fff4ec;background:linear-gradient(#c23228,#a01f17);border-radius:.15rem;transform:rotate(-.5deg);box-shadow:0 .08rem 0 rgba(255,255,255,.3) inset,0 .16rem .3rem rgba(0,0,0,.45);text-shadow:0 .08rem .06rem rgba(0,0,0,.5);white-space:nowrap}
+  .controles{display:flex;align-items:center;gap:1rem}
+  .led{width:1.2rem;height:1.2rem;border-radius:50%;background:radial-gradient(circle at 35% 30%,#3d5a45,#17241b);box-shadow:inset 0 .08rem .15rem rgba(0,0,0,.7),0 .1rem 0 rgba(255,255,255,.35);position:relative}
+  .led.on{background:radial-gradient(circle at 35% 30%,#d8ffe0,#46ff7c 55%,#159a42);box-shadow:0 0 .9rem #46ff7c,0 0 .2rem #46ff7c}
+  .led.ativo{filter:brightness(.55)}
+  .bip{position:absolute;left:50%;bottom:calc(100% + .35rem);transform:translateX(-50%);padding:.1rem .5rem;font:600 1.15rem/1.1 var(--k-texto);color:var(--beg-txt);background:var(--beg-cl);border-radius:.2rem;opacity:0;pointer-events:none;white-space:nowrap}
+  .led.bipando .bip{animation:bip .6s ease-out both}
+  @keyframes bip{0%{opacity:0;transform:translate(-50%,.4rem) scale(.7)}18%{opacity:1;transform:translate(-50%,0) scale(1.08)}70%{opacity:1}100%{opacity:0}}
+  .fisico{display:inline-flex;align-items:center;gap:.6rem;min-height:4.2rem;padding:0 1.2rem;margin-bottom:.3rem;font:600 1.35rem/1 var(--k-texto);color:var(--beg-txt);background:linear-gradient(#e9e2cf,#c6bda5);border:.1rem solid #80796a;border-radius:.45rem;box-shadow:0 .35rem 0 #807967,0 .5rem .7rem rgba(0,0,0,.4),inset 0 .1rem 0 rgba(255,255,255,.7);cursor:pointer;transition:transform .05s linear,box-shadow .05s linear}
+  .fisico:hover{background:linear-gradient(#f4eedd,#d5cdb6)}
+  .fisico:active,.fisico[aria-pressed="true"]{transform:translateY(.28rem);box-shadow:0 .07rem 0 #807967,inset 0 .15rem .3rem rgba(0,0,0,.28)}
+  .fisico:focus-visible{outline:.3rem solid #0a3b22;outline-offset:.15rem}
+  .visor{width:1.1rem;height:1.5rem;border-radius:.15rem;background:#ffb833;box-shadow:inset 0 0 0 .1rem rgba(0,0,0,.45),0 0 .5rem rgba(255,184,51,.6)}
+  .base{position:absolute;left:50%;top:100%;display:block;width:48%;height:8px;transform:translateX(-50%);background:linear-gradient(var(--beg-es),#5c5645);border-radius:0 0 6px 6px;box-shadow:0 4px 12px rgba(0,0,0,.55)}
+  .bt-fosforo-topo{display:none}
+  .k-marca{font-size:26px}
+}
+
+@media (max-width:980px),(max-height:619px){.k-painel{border-left:0;border-top:6px solid var(--k-topo-fundo)}}
+@media (hover:hover){
+  .mod:hover{background:var(--luz);color:var(--preto);text-shadow:none;--vazio:rgba(0,0,0,.3);--vao:var(--luz)}
+  .mod:hover .tag{color:inherit}
+  .linha-cmd:hover{background:var(--luz);color:var(--preto);text-shadow:none}
+  .linha-cmd:hover b{color:inherit}
+  .tecla:hover{background:linear-gradient(#1a4f30,#0f3520)}
+  html[data-fosforo="ambar"] .tecla:hover{background:linear-gradient(#5a3b0e,#3c2708)}
+  .tecla.forte:hover,html[data-fosforo="ambar"] .tecla.forte:hover{background:var(--alta)}
+  .k-aulas button:hover{background:var(--luz);color:var(--preto)}
+  .k-aulas button:hover .id,.k-aulas button:hover .st{color:inherit}
+}
+/* Toque em tela grande: linhas nunca menores que 44 px */
+@media (pointer:coarse){
+  .mod,.prompt,.fisico{min-height:44px}
+  .tecla,.tecla.forte,html[data-fosforo="ambar"] .tecla.forte{min-height:48px}
+}
+
+@media (pointer:coarse) and (min-width:981px) and (min-height:620px) and (max-height:860px){
+  body:not(.so-boot) .titulo{display:none}
+}
+/* Tablet e janela baixa: título numa faixa e duas colunas */
+@media (min-width:700px) and (max-width:980px),(min-width:981px) and (max-height:619px){
+  .titulo{flex-wrap:nowrap}
+  .titulo pre:first-child{flex-basis:auto}
+  .lista{display:grid;grid-auto-flow:column;grid-template-rows:repeat(9,auto);grid-template-columns:repeat(2,minmax(0,1fr));column-gap:1.6rem}
+  .mod{font-size:2.3rem}
+}
+@media (min-width:981px) and (max-height:619px){
+  .teclas{grid-template-columns:3fr repeat(4,minmax(0,1fr)) auto;gap:.8rem}
+  .tecla.forte,html[data-fosforo="ambar"] .tecla.forte{grid-column:auto}
+  .mod{grid-template-columns:5ch 3ch 22ch minmax(0,1fr);grid-template-areas:"tag num nome bar";min-height:44px;padding:0 .5ch;row-gap:0}
+}
+/* Celular pequeno em pé: teclas sem legenda, para sobrar lista */
+@media (max-width:699px) and (max-height:600px){
+  .tecla small{display:none}
+  .tecla,.tecla.forte,html[data-fosforo="ambar"] .tecla.forte{min-height:44px}
+  .mod{min-height:5rem;padding:.4rem .5ch;row-gap:.3rem}
+  .mascote{font-size:1.15rem}
+}
+/* Celular deitado: a doca vira uma faixa só, e o prompt divide a última fileira com a troca de tema */
+@media (max-height:500px){
+  .titulo{flex-wrap:nowrap}
+  .titulo pre:first-child{flex-basis:auto}
+  .teclas{grid-template-columns:2.6fr repeat(4,minmax(0,1fr)) auto;gap:.8rem}
+  .tecla,.tecla.forte,html[data-fosforo="ambar"] .tecla.forte{grid-column:auto;min-height:44px;font-size:2.3rem}
+  .tecla small{display:none}
+  .doca{gap:.2rem;padding-top:.4rem;padding-bottom:calc(66px + env(safe-area-inset-bottom))}
+  .mascote{font-size:1.1rem}
+}
+@media (max-height:500px) and (min-width:720px){
+  .doca{padding-bottom:env(safe-area-inset-bottom)}
+  .prompt{width:calc(50% - 178px);min-width:0;min-height:66px}
+  .dica{display:none}
+  .ps1{font-size:.92em}
+}
+@media (max-width:359px){
+  .tecla.forte,html[data-fosforo="ambar"] .tecla.forte{font-size:2.3rem}
+  .k-marca{font-size:20px}
+  .k-topo{gap:6px;padding:0 8px}
+  .bt-fosforo-topo::before{display:none}
+  .k-topo .k-bt{padding:0 8px}
+}
+@media (prefers-reduced-motion:reduce){
+  .rolo{display:none}
+  .vidro,.cursor,.mod.atual .blocos::after{animation:none}
+  .ligando .clarao,.ligando .luz,.clarao.pulso,.clarao.fecha,.tela.desmag,.tela.apagando,.cascata .lista,.cascata .nota,.surge .tecla{animation:none}
+  .tecla,.fisico,.penumbra{transition:none}
+}
+</style>
+</head>
+<body class="desligado so-boot sem-doca">
+<h1 class="sr">Do zero ao agente</h1>
+<div class="sala" aria-hidden="true"><i class="luz"></i><i class="mesa"></i></div>
+<main class="monitor">
+  <div class="gabinete">
+    <div class="moldura"><div class="tubo"><div class="tubo-in">
+      <section class="tela" id="tela" aria-label="Terminal do curso">
+        <div class="log" id="log"></div>
+        <div class="doca" id="doca">
+          <div class="teclas" role="group" aria-label="Próximos comandos">
+            <button type="button" class="tecla forte" data-cmd="continuar" style="--i:0">Continuar: Git e GitHub, do zero</button>
+            <button type="button" class="tecla" data-cmd="ls" style="--i:1" aria-label="ls: ver os módulos"><b>ls</b><small>módulos</small></button>
+            <button type="button" class="tecla" data-cmd="cd 3" style="--i:2" aria-label="cd 3: abrir o módulo 3"><b>cd 3</b><small>módulo 3</small></button>
+            <button type="button" class="tecla" data-cmd="ajuda" style="--i:3" aria-label="ajuda: ver os comandos"><b>ajuda</b><small>comandos</small></button>
+            <button type="button" class="tecla" data-cmd="limpar" style="--i:4" aria-label="limpar a tela"><b>limpar</b><small>a tela</small></button>
+            <pre class="mascote" id="mascote" aria-hidden="true"></pre>
+          </div>
+          <form class="prompt" id="form" autocomplete="off">
+            <label class="ps1" id="ps1" for="cmd">aluno@zero:~$</label>
+            <span class="campo">
+              <input id="cmd" type="text" maxlength="60" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="send" aria-label="Digite um comando e aperte Enter. Por exemplo: ajuda">
+              <i class="cursor" id="cursor" aria-hidden="true"></i>
+              <span class="dica" id="dica" aria-hidden="true"></span>
+            </span>
+          </form>
+        </div>
+      </section>
+      <div class="boot" id="boot" aria-hidden="true"></div>
+      <div class="boot-dica" id="boot-dica" aria-hidden="true"></div>
+      <i class="fx rolo" aria-hidden="true"></i><i class="fx vidro" aria-hidden="true"></i><i class="fx clarao" id="clarao" aria-hidden="true"></i>
+    </div></div></div>
+    <div class="queixo">
+      <div class="emblema"><b>Zero 84</b><span>Indústria Brasileira</span></div>
+      <div class="dymo">NÃO SABE OS COMANDOS? É SÓ CLICAR</div>
+      <div class="controles">
+        <span class="led" id="led" aria-hidden="true"><span class="bip">bip!</span></span>
+        <button type="button" class="fisico" id="bt-fosforo" aria-pressed="false" aria-label="Fósforo âmbar"><i class="visor"></i>Âmbar</button>
+        <button type="button" class="fisico" id="bt-religar" aria-label="Religar o monitor">Religar</button>
+      </div>
+    </div>
+  </div>
+  <i class="base" aria-hidden="true"></i>
+</main>
+<i class="penumbra" aria-hidden="true"></i>
+<p class="sr" id="sr" role="status"></p>
+<script src="dados.js"></script><script src="kit.js"></script><script>
+Kit.iniciar({ id: '7-terminal' });
+(function () {
+  const $ = s => document.querySelector(s);
+  const raiz = document.documentElement, corpo = document.body, CURSO = window.CURSO;
+  const log = $('#log'), campo = $('#cmd'), cursor = $('#cursor'), dica = $('#dica'), ps1 = $('#ps1'), form = $('#form');
+  const boot = $('#boot'), bootDica = $('#boot-dica'), doca = $('#doca'), masc = $('#mascote'), led = $('#led'), sr = $('#sr'), tela = $('#tela'), clarao = $('#clarao');
+  const NO_MONITOR = matchMedia('(min-width:981px) and (min-height:620px)');
+  const UMA_LINHA = matchMedia('(min-width:700px)');
+  const CALMO = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const FINO = matchMedia('(hover:hover) and (pointer:fine)').matches;
+  const PS = 'aluno@zero:~$';
+  const VERBO = FINO ? 'Clique' : 'Toque';
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const semAcento = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const espera = ms => new Promise(r => setTimeout(r, ms));
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+  /* A barra do kit começa à noite, e no celular ela leva o botão de fósforo */
+  const temaTopo = $('.k-tema-topo');
+  temaTopo.textContent = 'Dia';
+  temaTopo.insertAdjacentHTML('beforebegin', '<button type="button" class="k-bt borda bt-fosforo-topo" id="bt-fosforo-topo" aria-pressed="false" aria-label="Fósforo âmbar">Âmbar</button>');
+  dica.textContent = FINO ? 'digite aqui, se quiser' : innerWidth < 345 || innerHeight < 500 ? 'toque aqui' : 'toque para digitar';
+  bootDica.textContent = FINO ? 'clique ou aperte uma tecla para pular' : 'toque para pular';
+
+  /* Arte ASCII: só caracteres do alfabeto da fonte, para não cair em fonte reserva e desalinhar */
+  const LETRA = {
+    D: ['###### ', '##   ##', '##   ##', '##   ##', '###### '],
+    O: [' ###### ', '##    ##', '##    ##', '##    ##', ' ###### '],
+    Z: ['#######', '   ### ', '  ###  ', ' ###   ', '#######'],
+    E: ['#######', '##     ', '#####  ', '##     ', '#######'],
+    R: ['###### ', '##   ##', '###### ', '##  ## ', '##   ##'],
+    A: [' ##### ', '##   ##', '#######', '##   ##', '##   ##'],
+    G: [' ###### ', '##      ', '##   ###', '##    ##', ' ###### '],
+    N: ['###   ##', '####  ##', '## ## ##', '##  ####', '##   ###'],
+    T: ['########', '   ##   ', '   ##   ', '   ##   ', '   ##   '],
+    ' ': ['  ', '  ', '  ', '  ', '  ']
+  };
+  function banner(txt) {
+    return [0, 1, 2, 3, 4].map(i => [...txt].map(c => LETRA[c][i]).join(' ').replace(/#/g, 'M'));
+  }
+  const ARTE = [banner('DO ZERO'), banner('AO'), banner('AGENTE')];
+  const ARTE_TXT = ARTE.map(a => a.join('\n'));
+
+  function razaoCh() {
+    const s = document.createElement('span');
+    s.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font:100px var(--k-titulo)';
+    s.textContent = '0000000000';
+    corpo.append(s);
+    const r = s.getBoundingClientRect().width / 1000;
+    s.remove();
+    return r || .4;
+  }
+  function ajustarArte() {
+    const t = log.querySelector('.titulo');
+    if (!t || !t.clientWidth) return;
+    const [a, b, c] = ARTE.map(x => x[0].length), r = razaoCh();
+    /* O vão entre os pedaços vale 1,2 em */
+    const em = UMA_LINHA.matches ? (a + b + c) * r + 2.4 : Math.max(a, b + c) * r + 1.2;
+    const fs = Math.min(t.clientWidth / em, NO_MONITOR.matches ? 1.7 * parseFloat(getComputedStyle(raiz).fontSize) : 20);
+    t.style.setProperty('--arte', (Math.floor(fs * 10) / 10) + 'px');
+  }
+
+  /* Saída do terminal */
+  const psHtml = '<span class="ps">' + PS + '</span>';
+  function linhaModulo(m) {
+    const e = Kit.estado(m.n), total = m.aulas.length, feitas = e === 'feito' ? total : 0;
+    const tag = { feito: '[ok]', atual: '[>>]', futuro: '[--]' }[e];
+    const fala = { feito: 'concluído', atual: 'você está aqui', futuro: 'ainda não começou' }[e];
+    return `<li><button type="button" class="mod ${e}" data-n="${m.n}"${e === 'atual' ? ' aria-current="step"' : ''} aria-label="Módulo ${m.n}: ${esc(m.t)}. ${fala}, ${feitas} de ${total} aulas."><span class="tag">${tag}</span><span class="num">${String(m.n).padStart(2, '0')}</span><span class="nome">${esc(m.t)}</span><span class="blocos" style="--t:${total};--f:${feitas}"><i></i></span></button></li>`;
+  }
+  function htmlLista() {
+    return `<p class="eco eco-ls">${psHtml} ls</p><ul class="lista">${CURSO.map(linhaModulo).join('')}</ul><p class="nota">total ${CURSO.length}. ${VERBO} numa linha para abrir. Não precisa digitar nada.</p>`;
+  }
+  function bloco(html, cls) {
+    const b = document.createElement('div');
+    b.className = 'bloco' + (cls ? ' ' + cls : '');
+    b.innerHTML = html;
+    log.append(b);
+    while (log.children.length > 40) log.firstElementChild.remove();
+    return b;
+  }
+  const eco = txt => `<p class="eco">${psHtml} ${esc(txt)}</p>`;
+  const saida = (txt, fraca) => `<p class="saida${fraca ? ' fraca' : ''}">${esc(txt)}</p>`;
+  function rolarFim() {
+    if (NO_MONITOR.matches) log.scrollTop = log.scrollHeight;
+    else scrollTo(0, document.documentElement.scrollHeight);
+  }
+  function rolarPara(el) {
+    if (NO_MONITOR.matches) log.scrollTop += el.getBoundingClientRect().top - log.getBoundingClientRect().top;
+    else scrollTo(0, el.getBoundingClientRect().top + scrollY - $('.k-topo').offsetHeight - 8);
+  }
+  const fala = t => { sr.textContent = t; };
+
+  function montarInicio() {
+    log.innerHTML = '';
+    log.scrollTop = 0;
+    const t = document.createElement('div');
+    t.className = 'titulo';
+    t.setAttribute('aria-hidden', 'true');
+    t.innerHTML = ARTE_TXT.map(a => `<pre>${a}</pre>`).join('');
+    log.append(t);
+    bloco(htmlLista(), 'bloco-ls');
+    ajustarArte();
+  }
+
+  /* Mascote */
+  const Q = {
+    normal: ['   *   ', ' [o_o] ', ' /|_|\\ ', '  / \\  '],
+    apagado: ["   '   ", ' [o_o] ', ' /|_|\\ ', '  / \\  '],
+    pisca: ['   *   ', ' [-_-] ', ' /|_|\\ ', '  / \\  '],
+    esq: ['   *   ', ' [<_<] ', ' /|_|\\ ', '  / \\  '],
+    dir: ['   *   ', ' [>_>] ', ' /|_|\\ ', '  / \\  '],
+    le: ['   *   ', ' [._.] ', ' /|_|\\ ', '  / \\  '],
+    feliz: ['   *   ', '\\[^_^]/', '  |_|  ', '  / \\  '],
+    pula: ['   *   ', ' [^_^] ', ' /|_|\\ ', '  | |  '],
+    oi1: ['   *   ', ' [^_^]/', ' /|_|  ', '  / \\  '],
+    oi2: ['   *   ', ' [^_^]_', ' /|_|  ', '  / \\  '],
+    confuso: ['   ?   ', ' [o_O] ', ' /|_|\\ ', '  / \\  '],
+    dorme1: ['    z  ', ' [-_-] ', ' /|_|\\ ', '  / \\  '],
+    dorme2: ['     Z ', ' [-_-] ', ' /|_|\\ ', '  / \\  ']
+  };
+  let tMasc, mascPreso = false, ultimaAcao = Date.now();
+  const quadro = f => { masc.textContent = Q[f].join('\n'); };
+  function reage(seq, ms) {
+    clearTimeout(tMasc);
+    mascPreso = true;
+    let i = 0;
+    (function vai() {
+      if (i < seq.length) { quadro(seq[i++]); tMasc = setTimeout(vai, ms || 230); }
+      else { mascPreso = false; quadro('normal'); }
+    })();
+  }
+  function ciclo() {
+    const parado = Date.now() - ultimaAcao;
+    if (!mascPreso && !document.hidden && !bootAtivo) {
+      if (parado > 40000) quadro(masc.textContent.includes(' z ') ? 'dorme2' : 'dorme1');
+      else {
+        const r = Math.random();
+        const seq = r < .6 ? ['pisca'] : r < .72 ? ['esq', 'normal', 'dir'] : r < .84 ? ['apagado', 'normal', 'apagado'] : r < .95 ? ['dir'] : ['pula', 'normal', 'pula'];
+        reage(seq, 170);
+      }
+    }
+    setTimeout(ciclo, parado > 40000 ? 900 : 1700 + Math.random() * 2600);
+  }
+  function atividade() {
+    if (Date.now() - ultimaAcao > 40000 && !mascPreso) quadro('normal');
+    ultimaAcao = Date.now();
+  }
+  function piscaLed() {
+    led.classList.add('ativo');
+    setTimeout(() => led.classList.remove('ativo'), 70);
+  }
+  function pulso() {
+    if (CALMO) return;
+    clarao.classList.remove('pulso');
+    void clarao.offsetWidth;
+    clarao.classList.add('pulso');
+    setTimeout(() => clarao.classList.remove('pulso'), 220);
+  }
+
+  /* Prompt com cursor de bloco */
+  function sincronizar() {
+    const pos = document.activeElement === campo && campo.selectionStart != null ? campo.selectionStart : campo.value.length;
+    cursor.style.left = `calc(${pos}ch - ${campo.scrollLeft}px)`;
+    dica.hidden = !!campo.value;
+  }
+  function focarPrompt() {
+    if (FINO) campo.focus({ preventScroll: true });
+  }
+  const hist = [];
+  let hi = 0, ocupado = false, bootAtivo = false;
+
+  async function autoDigitar(cmd, origem) {
+    if (ocupado || bootAtivo) return;
+    ocupado = true;
+    campo.readOnly = true;
+    campo.value = '';
+    sincronizar();
+    atividade();
+    if (!CALMO) {
+      quadro('le');
+      for (const c of cmd) {
+        campo.value += c;
+        sincronizar();
+        piscaLed();
+        await espera(cmd.length > 6 ? 24 : 58);
+      }
+      await espera(cmd.length > 6 ? 90 : 120);
+    }
+    campo.value = '';
+    campo.readOnly = false;
+    sincronizar();
+    ocupado = false;
+    rodar(cmd);
+    origem?.classList.remove('apertada');
+  }
+
+  /* Comandos */
+  function acharModulo(a) {
+    if (/^\d+$/.test(a)) return CURSO[+a] || null;
+    return CURSO.find(m => semAcento(m.t.toLowerCase()).includes(a)) || null;
+  }
+  function entrar(m, txt) {
+    const res = `${m.n}. ${m.t}, ${m.aulas.length} aulas`;
+    const nota = log.lastElementChild && log.lastElementChild.querySelector(':scope > .nota');
+    const linha = `${psHtml} <span class="cmd">${esc(txt)}</span> &nbsp;${esc(res)}`;
+    if (nota) nota.innerHTML = linha;
+    else if (log.lastElementChild && log.lastElementChild.classList.contains('linha-cd')) log.lastElementChild.innerHTML = `<p class="nota">${linha}</p>`;
+    else { bloco(`<p class="nota">${linha}</p>`, 'linha-cd'); rolarFim(); }
+    fala(`Abrindo o módulo ${m.n}: ${m.t}`);
+    Kit.abrirModulo(m.n);
+  }
+  function rodar(bruto) {
+    const txt = String(bruto).trim();
+    atividade();
+    piscaLed();
+    if (!txt) { bloco(eco('')); rolarFim(); return; }
+    if (hist[hist.length - 1] !== txt) hist.push(txt);
+    hi = hist.length;
+    const limpo = semAcento(txt.toLowerCase()).replace(/^\$\s*/, '');
+    const [c, ...r] = limpo.split(/\s+/);
+    const arg = r.join(' ');
+    const responde = (...linhas) => { bloco(eco(txt) + linhas.join('')); rolarFim(); };
+
+    if (/^\d+$/.test(c)) {
+      const m = CURSO[+c];
+      if (!m) { erro(`${c}: não existe esse módulo. Eles vão de 0 a 17.`); return; }
+      entrar(m, 'cd ' + (+c));
+      return;
+    }
+    switch (c) {
+      case 'ls': case 'dir': case 'lista': case 'listar': case 'modulos': {
+        log.querySelectorAll('.mod').forEach(x => { x.tabIndex = -1; });
+        const b = bloco(htmlLista(), 'bloco-ls');
+        rolarPara(b);
+        document.querySelectorAll('.tecla.sugerida').forEach(x => x.classList.remove('sugerida'));
+        reage(['pula', 'normal', 'pula'], 130);
+        fala('Lista com os 18 módulos. Você está no módulo 3.');
+        return;
+      }
+      case 'cd': case 'abrir': case 'entrar': case 'modulo': {
+        if (!arg) { erro('Faltou dizer para onde. Exemplo: cd 3'); return; }
+        if (['..', '../', '~', '/', '-'].includes(arg)) { responde(saida('Você já está na pasta principal do curso.')); reage(['pisca']); fala('Você já está na pasta principal do curso.'); return; }
+        const m = acharModulo(arg.replace(/^modulo[- ]?/, ''));
+        if (!m) { erro(`cd: ${arg}: módulo não encontrado. Eles vão de 0 a 17.`); return; }
+        entrar(m, txt);
+        return;
+      }
+      case 'continuar': case 'continue': case 'seguir':
+        responde(saida('Abrindo a aula em que você parou: Git e GitHub, do zero.'));
+        reage(['feliz', 'pula', 'feliz'], 150);
+        fala('Abrindo a aula em que você parou.');
+        Kit.continuar();
+        return;
+      case 'ajuda': case 'help': case 'man': case 'comandos': case '?':
+        responde(saida('Digite um destes, ou só ' + VERBO.toLowerCase() + ' nele:', true),
+          [['ls', 'mostra os 18 módulos'], ['cd 3', 'abre um módulo: troque o 3 por outro número'], ['continuar', 'abre a aula em que você parou'], ['limpar', 'apaga a tela'], [raiz.dataset.fosforo === 'ambar' ? 'verde' : 'ambar', 'troca a cor da tela'], ['reiniciar', 'liga o monitor de novo'], ['ajuda', 'mostra esta lista']]
+            .map(([k, d]) => `<button type="button" class="linha-cmd" data-cmd="${k}"><b>${k}</b><span>${d}</span></button>`).join(''),
+          saida('Aqui nada quebra. Pode testar à vontade.', true));
+        reage(['oi1', 'oi2', 'oi1', 'oi2'], 170);
+        fala('Comandos: ls, cd e o número do módulo, continuar, limpar, ambar e ajuda.');
+        return;
+      case 'limpar': case 'clear': case 'cls':
+        log.innerHTML = '';
+        log.scrollTop = 0;
+        scrollTo(0, 0);
+        bloco(saida('Tela limpa. A tecla ls traz os módulos de volta.', true));
+        document.querySelectorAll('.tecla[data-cmd="ls"]').forEach(x => x.classList.add('sugerida'));
+        reage(['pisca', 'normal', 'pisca'], 120);
+        fala('Tela limpa. A tecla ls traz os módulos de volta.');
+        return;
+      case 'ambar': case 'verde': {
+        const quer = c;
+        responde(saida(raiz.dataset.fosforo === quer ? `A tela já está em ${quer === 'ambar' ? 'âmbar' : 'verde'}.` : `Fósforo trocado para ${quer === 'ambar' ? 'âmbar' : 'verde'}.`));
+        fosforo(quer);
+        return;
+      }
+      case 'reiniciar': case 'ligar': case 'reboot': case 'religar':
+        religar();
+        return;
+      case 'oi': case 'ola': case 'eai': case 'bomdia':
+        responde(saida('Oi! Eu sou o Zero, o robozinho aqui do canto. Digite ajuda para ver o que dá para fazer.'));
+        reage(['oi1', 'oi2', 'oi1', 'oi2', 'oi1'], 170);
+        fala('Oi! Digite ajuda para ver o que dá para fazer.');
+        return;
+      case 'pwd':
+        responde(saida('/curso, a pasta principal, onde ficam os módulos.'));
+        return;
+      case 'whoami':
+        responde(saida('aluno, parado no módulo 3.'));
+        return;
+      case 'sudo':
+        responde(saida('Aqui você já tem permissão para tudo. Pode tirar o sudo.'));
+        reage(['esq', 'dir'], 200);
+        return;
+      case 'rm': case 'del': case 'apagar':
+        responde(saida('Calma. Aqui nada é apagado de verdade.'));
+        reage(['confuso', 'pisca'], 300);
+        return;
+      case 'exit': case 'sair': case 'logout':
+        responde(saida('Não precisa sair. A barra de cima leva para as outras páginas.'));
+        reage(['esq', 'normal', 'esq'], 200);
+        return;
+      case 'git':
+        responde(saida('É o assunto do módulo 3, onde você está. Digite continuar.'));
+        reage(['feliz'], 500);
+        return;
+      case 'claude':
+        responde(saida('Ele tem um módulo inteiro só dele. Digite cd 7.'));
+        reage(['feliz'], 500);
+        return;
+      default:
+        erro(`${txt.split(/\s+/)[0]}: comando não encontrado. Digite ajuda para ver o que existe.`);
+    }
+    function erro(msg) {
+      responde(saida(msg));
+      reage(['confuso', 'confuso', 'pisca'], 320);
+      pulso();
+      fala(msg);
+    }
+  }
+
+  /* Fósforo: botão físico no gabinete, ou na barra no celular */
+  const btsFosforo = [$('#bt-fosforo'), $('#bt-fosforo-topo')];
+  function fosforo(cor, semEfeito) {
+    if (raiz.dataset.fosforo !== cor && !semEfeito && !CALMO) {
+      tela.classList.remove('desmag');
+      void tela.offsetWidth;
+      tela.classList.add('desmag');
+      setTimeout(() => tela.classList.remove('desmag'), 480);
+      pulso();
+    }
+    raiz.dataset.fosforo = cor;
+    btsFosforo.forEach(b => b.setAttribute('aria-pressed', String(cor === 'ambar')));
+    try { localStorage.setItem('zero84-fosforo', cor); } catch (e) {}
+  }
+  btsFosforo.forEach(b => b.addEventListener('click', () => {
+    if (bootAtivo) return;
+    atividade();
+    fosforo(raiz.dataset.fosforo === 'ambar' ? 'verde' : 'ambar');
+    fala(raiz.dataset.fosforo === 'ambar' ? 'Tela em âmbar.' : 'Tela em verde.');
+  }));
+  try { const s = localStorage.getItem('zero84-fosforo'); if (s === 'ambar') fosforo('ambar', true); } catch (e) {}
+
+  /* Boot: no máximo 3 segundos, contando a espera da fonte */
+  let timers = [];
+  const quando = (ms, fn) => timers.push(setTimeout(fn, ms));
+  function linhaBoot(html) {
+    const p = document.createElement('p');
+    p.innerHTML = html;
+    boot.append(p);
+    return p;
+  }
+  function posicaoHeroi(pres) {
+    const topo = $('.k-topo').offsetHeight;
+    const caixa = NO_MONITOR.matches ? $('.tubo-in').getBoundingClientRect() : { left: 0, top: topo, width: innerWidth, height: innerHeight - topo - 78 };
+    const zonaTopo = boot.getBoundingClientRect().bottom + 4;
+    const zonaAlt = caixa.top + caixa.height - zonaTopo - 16;
+    const rs = pres.map(p => p.getBoundingClientRect());
+    const linhas = UMA_LINHA.matches ? [[0], [1, 2]] : [[0], [1], [2]];
+    const vaoX = parseFloat(getComputedStyle(pres[0]).fontSize) * 1.2, altL = rs[0].height;
+    const largura = l => l.reduce((soma, i) => soma + rs[i].width, 0) + (l.length - 1) * vaoX;
+    const s = Math.min(caixa.width * .9 / Math.max(...linhas.map(largura)), zonaAlt * .72 / (altL * linhas.length), 3.4);
+    const vao = altL * s * .4;
+    let y = zonaTopo + (zonaAlt - (altL * s + vao) * linhas.length + vao) / 2;
+    linhas.forEach(l => {
+      let x = caixa.left + (caixa.width - largura(l) * s) / 2;
+      l.forEach(i => {
+        pres[i].style.transform = `translate(${x - rs[i].left}px,${y - rs[i].top}px) scale(${s})`;
+        x += (rs[i].width + vaoX) * s;
+      });
+      y += altL * s + vao;
+    });
+  }
+  function revelar(pres) {
+    const n = ARTE[0].length, sujo = '%&@$*+=?!/\\<>';
+    let l = 0;
+    (function passo() {
+      l++;
+      pres.forEach((p, i) => {
+        p.textContent = ARTE[i].map((row, r) => r < l - 1 ? row : r === l - 1 ? row.replace(/M/g, () => sujo[Math.random() * sujo.length | 0]) : ' '.repeat(row.length)).join('\n');
+      });
+      if (l <= n) quando(38, passo);
+    })();
+  }
+  function fimBoot() {
+    timers.forEach(clearTimeout);
+    timers = [];
+    bootAtivo = false;
+    corpo.classList.remove('desligado', 'ligando', 'so-boot', 'sem-doca');
+    boot.innerHTML = '';
+    led.classList.add('on');
+    led.classList.remove('bipando');
+    document.querySelectorAll('.fantasma').forEach(f => f.remove());
+    log.querySelectorAll('.titulo pre').forEach((p, i) => {
+      p.style.transition = p.style.transform = '';
+      p.classList.remove('vis', 'riscando');
+      p.textContent = ARTE_TXT[i];
+    });
+    log.querySelector('.cascata')?.classList.remove('cascata');
+    setTimeout(() => doca.classList.remove('surge'), 500);
+    ajustarArte();
+    sincronizar();
+    focarPrompt();
+    if (!NO_MONITOR.matches) {
+      const a = log.querySelector('.mod.atual'), limite = doca.getBoundingClientRect().top;
+      if (a && a.getBoundingClientRect().bottom > limite - 8) scrollBy(0, a.getBoundingClientRect().bottom - limite + 16);
+    }
+    if (!CALMO) reage(['oi1', 'oi2', 'oi1', 'oi2', 'pula'], 190);
+    else quadro('normal');
+  }
+  function pular(e) {
+    if (!bootAtivo) return;
+    if (e.type === 'pointerdown') {
+      const ate = performance.now() + 500;
+      addEventListener('click', ev => {
+        if (performance.now() < ate && ev.target.closest('#tela')) { ev.preventDefault(); ev.stopPropagation(); }
+      }, { capture: true, once: true });
+    }
+    fimBoot();
+  }
+  addEventListener('pointerdown', pular, true);
+  addEventListener('keydown', e => { if (bootAtivo && !['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) pular(e); }, true);
+
+  function ligar() {
+    timers.forEach(clearTimeout);
+    timers = [];
+    scrollTo(0, 0);
+    montarInicio();
+    boot.innerHTML = '';
+    ps1.textContent = PS;
+    quadro('normal');
+    if (CALMO) { fimBoot(); return; }
+    bootAtivo = true;
+    corpo.classList.add('desligado', 'so-boot', 'sem-doca');
+    corpo.classList.remove('ligando');
+    led.classList.remove('on');
+    const lista = log.querySelector('.bloco-ls');
+    const pres = [...log.querySelectorAll('.titulo pre')];
+    quando(30, () => {
+      led.classList.add('on', 'bipando');
+      corpo.classList.remove('desligado');
+      corpo.classList.add('ligando');
+      linhaBoot('<mark>bip!</mark>');
+    });
+    quando(800, () => corpo.classList.remove('ligando'));
+    quando(520, () => {
+      linhaBoot('Zero 84 BIOS 1.0, Indústria Brasileira');
+      const mem = linhaBoot('');
+      let kb = 0;
+      (function conta() {
+        kb = Math.min(640, kb + 48);
+        mem.textContent = `Testando memória... ${String(kb).padStart(3, ' ')} KB${kb === 640 ? ' ok' : ''}`;
+        piscaLed();
+        if (kb < 640) quando(22, conta);
+      })();
+    });
+    quando(880, () => {
+      const mods = linhaBoot('');
+      let n = 0;
+      (function conta() {
+        n++;
+        const cheio = Math.round(n / 18 * 10);
+        mods.textContent = `Carregando módulos [${'#'.repeat(cheio)}${'-'.repeat(10 - cheio)}] ${String(n).padStart(2, '0')}/18`;
+        piscaLed();
+        if (n < 18) quando(16, conta);
+      })();
+    });
+    quando(1210, () => {
+      ajustarArte();
+      posicaoHeroi(pres);
+      if (FINO) {
+        pres.forEach(p => { p.classList.add('vis'); p.textContent = ''; });
+        revelar(pres);
+      } else pres.forEach(p => p.classList.add('vis', 'riscando'));
+    });
+    quando(1500, pulso);
+    quando(1880, () => {
+      boot.innerHTML = '';
+      bootDica.textContent = '';
+      /* A persistência do fósforo deixa um rastro do título no lugar */
+      pres.forEach((p, i) => {
+        const r = p.getBoundingClientRect();
+        const rastro = document.createElement('pre');
+        rastro.className = 'fantasma';
+        rastro.setAttribute('aria-hidden', 'true');
+        rastro.textContent = ARTE_TXT[i];
+        const base = NO_MONITOR.matches ? $('.tubo-in') : corpo;
+        const rb = NO_MONITOR.matches ? base.getBoundingClientRect() : { left: 0, top: -scrollY };
+        rastro.style.fontSize = getComputedStyle(p).fontSize;
+        rastro.style.transform = `translate(${r.left - rb.left}px,${r.top - rb.top}px) scale(${r.width / p.offsetWidth})`;
+        base.append(rastro);
+        requestAnimationFrame(() => requestAnimationFrame(() => { rastro.style.opacity = 0; }));
+      });
+      pres.forEach(p => {
+        p.style.transition = 'transform .32s cubic-bezier(.2,.85,.25,1)';
+        p.style.transform = 'none';
+      });
+      lista.classList.add('cascata');
+      corpo.classList.remove('so-boot');
+    });
+    quando(2240, () => { doca.classList.add('surge'); corpo.classList.remove('sem-doca'); });
+    quando(2480, fimBoot);
+  }
+  function religar() {
+    if (bootAtivo || ocupado) return;
+    atividade();
+    if (CALMO) { ligar(); return; }
+    bootDica.textContent = FINO ? 'clique ou aperte uma tecla para pular' : 'toque para pular';
+    tela.classList.add('apagando');
+    clarao.classList.add('fecha');
+    led.classList.remove('on');
+    setTimeout(() => { tela.classList.remove('apagando'); clarao.classList.remove('fecha'); ligar(); }, 360);
+  }
+  $('#bt-religar').addEventListener('click', religar);
+
+  /* Cliques */
+  function aoClicar(e) {
+    if (bootAtivo) return;
+    const mod = e.target.closest('.mod');
+    if (mod) {
+      mod.classList.add('apertada');
+      setTimeout(() => mod.classList.remove('apertada'), 420);
+      autoDigitar('cd ' + mod.dataset.n, mod);
+      return;
+    }
+    const b = e.target.closest('[data-cmd]');
+    if (b) {
+      if (b.classList.contains('tecla')) {
+        b.classList.add('apertada');
+        setTimeout(() => b.classList.remove('apertada'), 110);
+      }
+      autoDigitar(b.dataset.cmd);
+    }
+  }
+  tela.addEventListener('click', aoClicar);
+  tela.addEventListener('click', e => {
+    if (FINO && !e.target.closest('button,a,input,label') && !String(getSelection())) focarPrompt();
+  });
+  log.addEventListener('mouseover', e => {
+    if (!mascPreso && e.target.closest('.mod')) { atividade(); reage([e.target.closest('.mod').dataset.n < 9 ? 'esq' : 'le'], 700); }
+  });
+
+  /* Teclado de verdade */
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    if (ocupado) return;
+    const v = campo.value;
+    campo.value = '';
+    sincronizar();
+    rodar(v);
+  });
+  const COMPLETA = ['ls', 'cd ', 'continuar', 'ajuda', 'limpar', 'ambar', 'verde', 'reiniciar'];
+  campo.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      hi = Math.max(0, Math.min(hist.length, hi + (e.key === 'ArrowUp' ? -1 : 1)));
+      campo.value = hist[hi] || '';
+      campo.selectionStart = campo.selectionEnd = campo.value.length;
+    } else if (e.key === 'Tab' && campo.value.trim()) {
+      const v = semAcento(campo.value.toLowerCase());
+      const a = COMPLETA.filter(x => x.startsWith(v));
+      if (a.length === 1) { e.preventDefault(); campo.value = a[0]; campo.selectionStart = campo.selectionEnd = campo.value.length; }
+    } else if (e.key === 'Escape') {
+      campo.value = '';
+    }
+    setTimeout(sincronizar);
+  });
+  campo.addEventListener('input', () => {
+    sincronizar();
+    piscaLed();
+    atividade();
+    if (campo.value && !mascPreso) reage(['le'], 500);
+  });
+  ['click', 'keyup', 'select', 'scroll'].forEach(t => campo.addEventListener(t, sincronizar));
+  campo.addEventListener('focus', () => {
+    sincronizar();
+    if (!FINO) corpo.classList.add('digitando');
+  });
+  campo.addEventListener('blur', () => {
+    corpo.classList.remove('digitando');
+    raiz.style.setProperty('--teclado', '0px');
+  });
+  /* Teclado virtual que não redimensiona a página, como no iPhone */
+  if (window.visualViewport) {
+    const vv = visualViewport;
+    const ajusta = () => {
+      const k = Math.max(0, innerHeight - vv.height - vv.offsetTop);
+      raiz.style.setProperty('--teclado', (document.activeElement === campo ? k : 0) + 'px');
+    };
+    vv.addEventListener('resize', ajusta);
+    vv.addEventListener('scroll', ajusta);
+  }
+  const sobreposto = () => $('.k-painel').classList.contains('on') || $('.k-aula').classList.contains('on');
+  document.addEventListener('keydown', e => {
+    if (bootAtivo || e.ctrlKey || e.metaKey || e.altKey || sobreposto()) return;
+    const alvo = document.activeElement;
+    if (alvo === campo || e.key.length !== 1) return;
+    if (e.key === ' ' && alvo && alvo.matches('button,a')) return;
+    campo.focus({ preventScroll: true });
+  });
+
+  /* Eventos do kit */
+  document.addEventListener('k-modulo', e => {
+    const n = e.detail, est = Kit.estado(n), painel = $('.k-painel');
+    ps1.textContent = `aluno@zero:~/modulo-${n}$`;
+    reage(['feliz', 'pula', 'feliz'], 160);
+    painel.insertAdjacentHTML('afterbegin', `<div class="eco-painel" aria-hidden="true">aluno@zero:~/modulo-${n}$ ls</div>`);
+    painel.querySelectorAll('.k-aulas button').forEach((b, i) => {
+      const t = est === 'feito' ? ['[ok]', 'ok'] : est === 'atual' && i === 0 ? ['[>>]', 'vai'] : ['[--]', ''];
+      b.insertAdjacentHTML('afterbegin', `<span class="st ${t[1]}" aria-hidden="true">${t[0]}</span>`);
+    });
+  });
+  document.addEventListener('k-fechar', () => {
+    ps1.textContent = PS;
+    reage(['pisca'], 200);
+  });
+  document.addEventListener('k-noite', () => reage(['pisca', 'normal', 'pisca'], 140));
+  const voltouDaAula = () => setTimeout(() => {
+    if ($('.k-painel').classList.contains('on')) $('.k-fecha').focus();
+    else focarPrompt();
+  });
+  document.addEventListener('click', e => { if (e.target.closest('.k-volta')) voltouDaAula(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && $('.k-aula').classList.contains('on')) voltouDaAula(); }, true);
+
+  addEventListener('resize', () => { if (!bootAtivo) { ajustarArte(); sincronizar(); } });
+  [NO_MONITOR, UMA_LINHA].forEach(q => q.addEventListener('change', () => { if (!bootAtivo) ajustarArte(); }));
+  document.fonts?.addEventListener?.('loadingdone', () => { if (!bootAtivo) { ajustarArte(); sincronizar(); } });
+
+  /* Liga: espera a fonte por pouco tempo, como um tubo esquentando */
+  quadro('normal');
+  sincronizar();
+  const css = $('#fontes');
+  const cssPronto = new Promise(r => { if (css.media === 'all') r(); else css.addEventListener('load', () => setTimeout(r), { once: true }); });
+  const fonte = cssPronto.then(() => document.fonts ? document.fonts.load('24px VT323', 'ãçéM') : null);
+  Promise.race([fonte, espera(CALMO ? 0 : 400)]).catch(() => {}).then(() => { ligar(); if (!CALMO) setTimeout(ciclo, 4200); });
+})();
+</script>
+</body>
+</html>

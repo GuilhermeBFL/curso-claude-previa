@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Do zero ao agente: a planta do seu robô</title>
+<meta name="theme-color" content="#0a2f73">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23114a9e'/%3E%3Ccircle cx='11' cy='15' r='6' fill='%23fff'/%3E%3Ccircle cx='21' cy='15' r='6' fill='%23fff'/%3E%3Ccircle cx='12' cy='16' r='2.6' fill='%230a2f73'/%3E%3Ccircle cx='22' cy='16' r='2.6' fill='%230a2f73'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Stencil:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --folha:#114a9e; --folha-borda:#0c3b85; --folha-luz:#1a5cc0; --tinta:#0a2f73; --giz:#eaf3ff; --lapis:#ffd83d;
+  --letra:'Architects Daughter','Segoe Print',cursive;
+  --k-topo-fundo:#0a2f73; --k-topo-texto:#f2f7ff; --k-acento:#ffd83d; --k-acento-texto:#0a2f73;
+  --k-painel-fundo:#f5f9ff; --k-painel-texto:#0a2558; --k-linha:#b9cdee;
+  --k-titulo:'Big Shoulders Stencil','Arial Narrow',sans-serif; --k-texto:'Barlow','Segoe UI',sans-serif; --k-raio:4px;
+  --k-leitura-fundo:#f7faff; --k-leitura-texto:#13233f; --k-leitura-caixa:#e5eefb;
+  --k-leitura-fundo-noite:#0c1f44; --k-leitura-texto-noite:#e9f1ff; --k-leitura-caixa-noite:#16305f;
+}
+html[data-leitura="noite"]{ --folha:#0b2f6b; --folha-borda:#071f4c; --folha-luz:#103c85; }
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;color:var(--giz);font-family:var(--k-texto);background-color:var(--folha);
+  background-image:
+    linear-gradient(rgba(234,243,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(234,243,255,.055) 1px,transparent 1px),
+    linear-gradient(rgba(234,243,255,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(234,243,255,.13) 1px,transparent 1px),
+    radial-gradient(ellipse at 50% 42%,var(--folha-luz),var(--folha) 48%,var(--folha-borda));
+  background-size:20px 20px,20px 20px,100px 100px,100px 100px,100% 100%;
+}
+.k-painel :focus-visible{outline-color:#1557c8}
+.k-aula{--k-acento:#b98400}
+html[data-leitura="noite"] .k-aula{--k-acento:#ffd83d}
+.k-aula .k-aula-barra,.k-video{--k-acento:#ffd83d}
+.k-caixa h3,.k-aula-barra strong{font-family:var(--k-texto);font-weight:700}
+.k-aula h2{letter-spacing:.012em}
+.k-painel h2{font-size:32px}
+.k-marca{letter-spacing:.015em;font-size:21px}
+
+/* Moldura técnica da folha */
+.moldura{position:fixed;inset:calc(var(--k-topo-h) + 8px) 8px 8px;border:1.5px solid rgba(234,243,255,.6);outline:1px solid rgba(234,243,255,.22);outline-offset:-6px;pointer-events:none;
+  background:
+    repeating-linear-gradient(90deg,rgba(234,243,255,.6) 0 1px,transparent 1px 12.5%) top/100% 6px no-repeat,
+    repeating-linear-gradient(90deg,rgba(234,243,255,.6) 0 1px,transparent 1px 12.5%) bottom/100% 6px no-repeat,
+    repeating-linear-gradient(rgba(234,243,255,.6) 0 1px,transparent 1px 25%) left/6px 100% no-repeat,
+    repeating-linear-gradient(rgba(234,243,255,.6) 0 1px,transparent 1px 25%) right/6px 100% no-repeat}
+
+/* Folha: título, chamadas à esquerda, robô, chamadas à direita, carimbo */
+.folha{position:relative;margin-top:var(--k-topo-h);height:calc(100dvh - var(--k-topo-h));min-height:620px;padding:20px 26px 74px;display:grid;
+  grid-template-columns:minmax(232px,1fr) minmax(0,calc((100dvh - var(--k-topo-h) - 94px)*.95)) minmax(232px,1fr);
+  grid-template-rows:auto minmax(0,1fr);grid-template-areas:"cab palco dir" "esq palco dir";transition:transform .32s cubic-bezier(.3,.8,.25,1)}
+.folha.aberta{transform:translateX(calc(var(--desvio,0px)*-1))}
+.cab{grid-area:cab;position:relative;z-index:3}
+.cab h1{margin:0;font-family:var(--k-titulo);font-weight:800;font-size:clamp(48px,min(4.7vw,8vh),86px);line-height:.92;letter-spacing:.008em;color:#fff}
+.cab h1 span{display:block}
+.cab p{margin:9px 0 12px;font-size:clamp(16.5px,1.85vh,26px);line-height:1.32;max-width:31ch}
+.continuar{display:inline-flex;align-items:center;min-height:46px;padding:9px 16px;font:700 clamp(16px,1.8vh,25px)/1.2 var(--k-texto);color:var(--tinta);background:var(--lapis);border:0;border-radius:var(--k-raio);box-shadow:4px 4px 0 var(--tinta);cursor:pointer;text-align:left;transition:transform .12s,box-shadow .12s}
+.continuar:hover{transform:translate(-1px,-1px);box-shadow:6px 6px 0 var(--tinta)}
+.continuar:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--tinta)}
+.continuar:focus-visible{outline-color:#fff}
+.palco{grid-area:palco;position:relative;min-width:0;min-height:0}
+#robo{display:block;width:100%;height:100%;overflow:visible}
+.dir{grid-area:dir;display:flex;flex-direction:column;min-height:0;gap:8px}
+.col{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;justify-content:space-around;min-height:0;position:relative;z-index:3}
+.col-e{grid-area:esq;flex-direction:column-reverse;margin-top:6px}
+.col-d{flex:1}
+.ch{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:9px;width:100%;min-height:44px;padding:2px 7px;background:none;border:0;border-radius:var(--k-raio);color:var(--giz);cursor:pointer;text-align:left;font:inherit;transition:background-color .15s}
+.col-e .ch{grid-template-columns:minmax(0,1fr) auto;text-align:right}
+.col-e .bal{order:2}
+.ch:hover,.ch.quente{background:rgba(234,243,255,.14)}
+.ch:focus-visible{outline-offset:0}
+.bal{display:grid;place-items:center;width:clamp(31px,3.45vh,48px);height:clamp(31px,3.45vh,48px);border-radius:50%;font:700 clamp(15px,1.67vh,23px)/1 var(--k-texto);font-variant-numeric:tabular-nums;border:1.5px dashed var(--giz);background:var(--folha)}
+.txt{display:block;min-width:0}
+.nome{display:block;font-family:var(--letra);font-size:clamp(18px,2.05vh,30px);line-height:1.14;color:#fff}
+.nota{display:block;font-size:clamp(13.5px,1.5vh,21px);line-height:1.15;margin-top:2px;color:#d3e3fb}
+.feito .bal{background:#eef5ff;color:var(--tinta);border:1.5px solid #eef5ff}
+.atual .bal{background:var(--lapis);color:var(--tinta);border:1.5px solid var(--lapis)}
+.atual .nome{color:var(--lapis)}
+.atual .nota{color:var(--lapis);font-weight:600}
+.mini{display:none}
+.mini,.mini *{pointer-events:none!important}
+.lista-tit{display:none}
+
+/* Carimbo de engenharia */
+.carimbo{flex:none;align-self:stretch;display:grid;grid-template-columns:1fr 1fr;border:1.5px solid rgba(234,243,255,.75);background:rgba(10,47,115,.55);margin-top:2px;font-size:clamp(12.5px,1.4vh,18px);line-height:1.15}
+.carimbo div{padding:5px 9px 6px;border-top:1px solid rgba(234,243,255,.45);min-width:0}
+.carimbo div:nth-child(2n+1):not(:first-child){border-right:1px solid rgba(234,243,255,.45)}
+.carimbo div:first-child{grid-column:1/-1;border-top:0}
+.carimbo b{display:block;font-weight:500;color:#c6daf8}
+.carimbo span{display:block;font-family:var(--letra);font-size:1.28em;color:#fff;margin-top:1px}
+.carimbo .num{font-family:var(--k-texto);font-weight:600;font-size:1.24em}
+.carimbo .proj{font-family:var(--k-titulo);font-weight:700;font-size:1.68em;letter-spacing:.01em;line-height:1}
+
+/* Linhas de chamada, por cima do desenho */
+.linhas{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:visible}
+.linhas path{fill:none;stroke:var(--giz);stroke-width:1.15;opacity:.72;transition:stroke .15s,opacity .15s}
+.linhas circle{fill:var(--giz);opacity:.9}
+.linhas .feito{opacity:.95;stroke-width:1.4}
+.linhas .atual{stroke:var(--lapis);opacity:1;stroke-width:2}
+.linhas .capa{stroke:var(--tinta);stroke-width:5;opacity:1}
+.linhas circle.atual{fill:var(--lapis)}
+.linhas .quente{stroke:var(--lapis);opacity:1;stroke-width:2.2}
+.linhas circle.quente{fill:var(--lapis)}
+
+/* Desenho do robô */
+.tecnico{fill:none;stroke:var(--giz);stroke-width:1.2;opacity:.42}
+.eixo{stroke-dasharray:26 6 3 6}
+.monta{fill:none;stroke:var(--giz);stroke-width:1.1;stroke-dasharray:10 5 2 5;opacity:.36}
+.cota{fill:none;stroke:var(--giz);stroke-width:1.2;opacity:.65}
+.cota-seta{fill:var(--giz);opacity:.75}
+.cota-txt{font-family:var(--letra);font-size:20px;fill:#fff}
+.cota-voce{fill:var(--lapis)}
+.cota-num{font-family:var(--k-texto);font-weight:600;font-size:18px}
+.piso{fill:none;stroke:var(--giz);stroke-width:1.6;opacity:.7}
+.peca{cursor:pointer;outline:none}
+.peca *{pointer-events:none}
+.peca .hit,.peca .c{pointer-events:all}
+.hit{fill:transparent;stroke:none}
+.c{fill:rgba(234,243,255,.05);stroke:var(--giz);stroke-width:2;stroke-dasharray:7 6;stroke-linejoin:round;stroke-linecap:round;transition:fill .15s}
+.f{fill:none;stroke:var(--giz);stroke-width:2.6;stroke-dasharray:7 6;stroke-linecap:round}
+.d{fill:none;stroke:var(--giz);stroke-width:1.4;stroke-dasharray:3 4;stroke-linecap:round;opacity:.85}
+.miudo{stroke-dasharray:4 3.4;stroke-width:1.8}
+.s{fill:var(--giz);stroke:none}
+.boca{fill:none;stroke:var(--giz);stroke-width:3.2;stroke-linecap:round}
+.boca.fina{stroke-width:2}
+.feito .boca{stroke:var(--tinta)}
+.quente .boca{stroke:var(--lapis)}
+.feito .c,.quente .miudo{stroke-dasharray:none}
+.feito .c{fill:#eef5ff;stroke:var(--tinta)}
+.feito .f{stroke:#eef5ff;stroke-dasharray:none}
+.feito .d{stroke:var(--tinta);stroke-dasharray:none;opacity:1}
+.feito .s{fill:var(--tinta)}
+.cav{fill:#0b2c6c;stroke:var(--tinta);stroke-width:2}
+.futuro .cav{fill:none;stroke:var(--giz);stroke-dasharray:3 4}
+.encaixe{fill:none;stroke:var(--giz);stroke-width:1.4;stroke-dasharray:4 5;opacity:.6}
+.guia{fill:none;stroke:var(--lapis);stroke-width:1.6;stroke-dasharray:3 6;opacity:.5}
+.fio{fill:none;stroke:var(--lapis);stroke-width:4.4;stroke-linecap:round;stroke-linejoin:round}
+.no{fill:var(--lapis);stroke:#0b2c6c;stroke-width:2}
+.branco{fill:#fff;stroke:var(--tinta);stroke-width:2}
+.pupila-o{fill:var(--tinta)}
+.brilho{fill:#fff}
+html[data-leitura="noite"] .branco{fill:var(--lapis)}
+.braco-c{fill:none;stroke:#0b2c6c;stroke-width:12;stroke-linecap:round;stroke-linejoin:round}
+.braco-l{fill:none;stroke:#eaf3ff;stroke-width:7.5;stroke-linecap:round;stroke-linejoin:round}
+.braco-n{fill:none;stroke:#0a2f73;stroke-width:1.5;stroke-dasharray:5 5}
+.braco-j{fill:var(--lapis);stroke:#0b2c6c;stroke-width:2.4}
+.braco-b{fill:#eaf3ff;stroke:#0b2c6c;stroke-width:2}
+.caneta{fill:var(--lapis);stroke:#0b2c6c;stroke-width:1.6;stroke-linejoin:round}
+.caneta-p{fill:#fff;stroke:#0b2c6c;stroke-width:1.6;stroke-linejoin:round}
+.bal-m{display:none;cursor:pointer;transition:opacity .3s}
+.riscando .bal-m{opacity:0}
+.bal-m circle{fill:var(--folha);stroke:var(--giz);stroke-width:2;stroke-dasharray:3 3}
+.bal-m text{font:700 21px var(--k-texto);fill:#fff;text-anchor:middle;dominant-baseline:central}
+.bal-m.feito circle{fill:#eef5ff;stroke:var(--tinta);stroke-dasharray:none}
+.bal-m.feito text{fill:var(--tinta)}
+.bal-m.atual circle{fill:var(--lapis);stroke:var(--tinta);stroke-dasharray:none}
+.bal-m.atual text{fill:var(--tinta)}
+
+/* Destaque da peça */
+.hov{transition:transform .2s cubic-bezier(.3,1.5,.5,1);transform-box:fill-box;transform-origin:center}
+.quente .hov{transform:scale(1.08)}
+.peca[data-n="2"].quente .hov,.peca[data-n="3"].quente .hov,.peca[data-n="6"].quente .hov{transform:scale(1.03)}
+.quente .c{fill:rgba(255,216,61,.2);stroke:var(--lapis);stroke-dasharray:none}
+.quente .f{stroke:var(--lapis);stroke-dasharray:none}
+.quente .d{stroke:var(--lapis);stroke-dasharray:none;opacity:1}
+.feito.quente .c{fill:#fff6c9;stroke:var(--tinta)}
+.feito.quente .d{stroke:var(--tinta)}
+.quente .s{fill:var(--lapis)}
+.feito.quente .s{fill:var(--tinta)}
+.gira,.gira2,.ponteiro,.vira{transform-box:fill-box;transform-origin:center}
+.ponteiro{transform-origin:50% 100%}
+.quente .gira{animation:gira 5s linear infinite}
+.quente .gira2{animation:gira 3.2s linear infinite reverse}
+.quente .ponteiro{animation:ponteiro 1.1s ease-in-out infinite alternate}
+.quente .vira{animation:vira 1.1s ease-in-out infinite alternate}
+@keyframes gira{to{transform:rotate(360deg)}}
+@keyframes ponteiro{from{transform:rotate(-55deg)}to{transform:rotate(50deg)}}
+@keyframes vira{from{transform:scaleY(1)}to{transform:scaleY(.25)}}
+
+/* Movimento contínuo: peças flutuando, coração e piscada */
+@keyframes flut{from{transform:translateY(-3.5px)}to{transform:translateY(3.5px)}}
+@keyframes bate{0%,70%,100%{transform:scale(1)}80%{transform:scale(1.09)}90%{transform:scale(.99)}}
+@keyframes pisca{0%,44%,47%,84%,87%,90%,100%{transform:scaleY(1)}45.5%,85.5%,88.5%{transform:scaleY(.06)}}
+.solta .futuro .bob{animation:flut 3.4s ease-in-out infinite alternate;animation-delay:var(--atraso,0s)}
+.solta .futuro[data-n="17"] .bob{animation:bate 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.solta .olho{animation:pisca 7.5s infinite;transform-box:fill-box;transform-origin:center}
+body.lendo *{animation-play-state:paused!important}
+
+/* Detalhe ampliado, por cima do véu */
+.lupa{position:fixed;inset:0;width:100%;height:100%;z-index:58;pointer-events:none;overflow:hidden;display:none}
+.lupa.on{display:block}
+.lupa *{pointer-events:none!important}
+.lupa .fx{transition:opacity .25s}
+.lupa .anel{transition:transform .42s cubic-bezier(.2,.9,.25,1.12),opacity .2s;transform-box:fill-box;transform-origin:center}
+.lupa .anel-f{fill:#0d3f92;stroke:var(--lapis);stroke-width:3}
+.lupa .anel-i{fill:none;stroke:var(--giz);stroke-width:1;stroke-dasharray:2 7;opacity:.8}
+.lupa .cl{transition:transform .46s cubic-bezier(.2,.9,.25,1.08)}
+.lupa .cl *,.lupa .ov *{vector-effect:non-scaling-stroke}
+.lupa .cl .c{stroke-width:2.6}
+.lupa .cl .d{stroke-width:1.6}
+.lupa .cl .f,.lupa .cl .fio{stroke-width:3.6}
+.lupa .cl .miudo{stroke-width:2;stroke-dasharray:4 3.4}
+.lupa.cel .cl .c{stroke-width:1.7;stroke-dasharray:4 3}
+.lupa.cel .cl .miudo{stroke-width:1.3;stroke-dasharray:2.5 2.2}
+.lupa.cel .cl .d{stroke-width:1;stroke-dasharray:2 2.5}
+.lupa.cel .cl .f,.lupa.cel .cl .fio{stroke-width:2.4}
+.lupa.cel .feito .c{stroke-dasharray:none}
+.lupa .ov .c,.lupa .ov .f,.lupa .ov .fio,.lupa .ov .cav{stroke-width:1;stroke-dasharray:none}
+.lupa .ov .d,.lupa .ov .guia,.lupa .ov .encaixe,.lupa .ov .braco-g{display:none}
+.lupa .ov .peca{opacity:.5}
+.lupa .ov .peca.alvo{opacity:1}
+.lupa .ov .peca.alvo .c{fill:var(--lapis);stroke:var(--tinta)}
+.lupa .ov .peca.alvo .f,.lupa .ov .peca.alvo .fio{stroke:var(--lapis);stroke-width:3}
+.lupa .tira{fill:#0d3f92}
+.lupa .tira-l{stroke:var(--giz);stroke-width:1;opacity:.6}
+.lupa .liga{fill:none;stroke:var(--lapis);stroke-width:1.8}
+.lupa .liga-o{fill:none;stroke:var(--lapis);stroke-width:2}
+.lupa text{font-family:var(--letra);fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#08255c;stroke-width:5px;stroke-linejoin:round}
+.lupa .tit-d{font:500 14.5px var(--k-texto);fill:#d3e3fb}
+.lupa .tit-p{font-size:25px}
+.parado *{transition:none!important;animation:none!important}
+.riscando .c,.riscando .cav{fill-opacity:0}
+.riscando .s,.riscando .olho,.riscando .no,.riscando .guia{opacity:0}
+.riscando.leve .d,.riscando.leve .encaixe{opacity:0}
+#robo .c,#robo .cav{transition:fill-opacity .38s,fill .15s}
+#robo .s,#robo .olho,#robo .guia,#robo .d{transition:opacity .3s}
+.longe *{animation-play-state:paused!important}
+.cota-txt{text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:var(--folha);stroke-width:7px;stroke-linejoin:round}
+@media (prefers-reduced-motion:reduce){.folha,.continuar,.hov,.ch{transition:none}.lupa *{transition:none!important}.quente .gira,.quente .gira2,.quente .ponteiro,.quente .vira{animation:none}}
+
+@media (min-width:981px) and (max-height:800px){
+  .folha{padding-top:13px}
+  .cab h1{font-size:54px}
+  .cab p{font-size:15.5px;margin:6px 0 9px}
+}
+@media (min-width:981px) and (max-width:1180px){
+  .folha{padding-left:20px;padding-right:20px;grid-template-columns:minmax(252px,1fr) minmax(0,calc((100dvh - var(--k-topo-h) - 94px)*.95)) minmax(236px,1fr)}
+  .cab h1{font-size:46px}
+  .cab p{font-size:15px;margin:5px 0 8px;max-width:none}
+  .continuar{padding:7px 12px;font-size:15px;min-height:44px;white-space:nowrap}
+  .nome{font-size:16.5px}
+  .ch{padding:2px 4px;gap:7px}
+}
+@media (min-width:981px) and (max-height:730px){
+  .folha{padding-top:12px;padding-bottom:70px}
+  .cab h1{font-size:43px}
+  .cab p{font-size:14.5px;margin:4px 0 7px;line-height:1.25}
+  .continuar{min-height:44px;padding:5px 14px;font-size:15px}
+  .nome{font-size:16.5px}
+  .nota{font-size:12.5px}
+  .col-e{margin-top:2px}
+}
+
+/* Celular e tablet: título, robô no alto e lista de peças */
+@media (max-width:980px),(max-aspect-ratio:11/10){
+  .moldura{display:none}
+  .folha{display:block;height:auto;min-height:0;padding:16px 14px calc(92px + env(safe-area-inset-bottom))}
+  .folha.aberta{transform:none}
+  .cab h1{font-size:clamp(34px,12.4vw,64px);line-height:.95}
+  .cab h1 span{display:inline}
+  .cab p{max-width:none;margin:7px 0 11px}
+  .continuar{width:100%;justify-content:center;text-align:center;min-height:50px}
+  .palco{margin:16px auto 6px;width:100%;max-width:min(660px,68vh);min-width:min(100%,300px);aspect-ratio:760/800}
+  .linhas,.cota-g{display:none}
+  .bal-m{display:block}
+  .lista-tit{display:block;margin:12px 0 2px;font:700 25px/1.1 var(--k-titulo);letter-spacing:.01em;color:#fff}
+  .col,.col-e{display:block;margin:0}
+  .dir{display:block}
+  .carimbo{margin:18px 0 0}
+  .col li{border-bottom:1px dashed rgba(234,243,255,.42)}
+  .ch,.col-e .ch{grid-template-columns:62px auto minmax(0,1fr);text-align:left;gap:10px;min-height:72px;padding:6px 6px;border-radius:0}
+  .col-e .bal{order:0}
+  .mini{display:block;width:62px;height:58px;overflow:visible;background:rgba(10,47,115,.42);border:1px solid rgba(234,243,255,.28);border-radius:3px;padding:5px}
+  .mini *{vector-effect:non-scaling-stroke}
+  .mini .c,.mini .cav{stroke-width:1.5}
+  .mini .f,.mini .fio{stroke-width:2.2}
+  .mini .d{stroke-width:1;stroke-dasharray:2 2}
+  .mini .c,.mini .f{stroke-dasharray:3 3}
+  .mini .miudo{stroke-dasharray:2 1.6;stroke-width:1.1}
+  .mini .feito .c,.mini .feito .f{stroke-dasharray:none}
+  .mini .guia,.mini .encaixe{display:none}
+  .nome{font-size:19px}
+  .nota{font-size:14px}
+  .cab p{font-size:16.5px}
+  .continuar{font-size:16px}
+  .bal{width:31px;height:31px;font-size:15px}
+  .carimbo{font-size:12.5px}
+  .ch.atual,.ch.atual:hover,.ch.atual.quente{background:var(--lapis);color:var(--tinta)}
+  .ch.atual .nome,.ch.atual .nota{color:var(--tinta)}
+  .ch.atual .bal{background:var(--tinta);color:var(--lapis);border-color:var(--tinta)}
+  .ch.atual .mini{background:#0b2c6c;border-color:#0b2c6c}
+  .ch.atual:focus-visible{outline-color:#fff;outline-offset:2px}
+}
+@media (min-width:700px) and (max-width:980px),(min-width:700px) and (max-aspect-ratio:11/10){
+  .col li{break-inside:avoid}
+  .col{columns:2;column-gap:18px}
+  .col,.col-e{display:block}
+}
+</style>
+</head>
+<body>
+<div class="moldura" aria-hidden="true"></div>
+<main class="folha" id="folha">
+  <div class="cab">
+    <h1><span>Do zero </span><span>ao agente</span></h1>
+    <p>Monte o seu agente, peça por peça. Escolha uma peça para ver as aulas.</p>
+    <button class="continuar" id="continuar" type="button">Continuar: Git e GitHub, do zero</button>
+  </div>
+  <div class="palco" id="palco">
+    <svg id="robo" viewBox="0 0 760 800" role="img" aria-label="Robô em vista explodida: pés, pernas e tronco já montados, a fiação sendo desenhada e as outras peças tracejadas, esperando a vez."></svg>
+  </div>
+  <h2 class="lista-tit" id="lista-tit">Lista de peças</h2>
+  <ol class="col col-e" id="col-e" aria-labelledby="lista-tit"></ol>
+  <div class="dir">
+    <ol class="col col-d" id="col-d" start="10" aria-labelledby="lista-tit"></ol>
+    <aside class="carimbo" aria-label="Carimbo da planta">
+      <div><b>Projeto</b><span class="proj">Do zero ao agente</span></div>
+      <div><b>Folha</b><span class="num">3 de 18</span></div>
+      <div><b>Montagem</b><span>você</span></div>
+    </aside>
+  </div>
+  <svg class="linhas" id="linhas" aria-hidden="true"></svg>
+</main>
+<svg class="lupa" id="lupa" aria-hidden="true"></svg>
+<script src="dados.js"></script>
+<script src="kit.js"></script>
+<script>
+Kit.iniciar({ id: '3-robo-planta' });
+/* As 18 peças. pos: onde a peça flutua enquanto é futura. fim: onde ela encaixa. a: ponto de chegada da linha de chamada. */
+const M = s => s + `<g transform="matrix(-1 0 0 1 760 0)">${s}</g>`;
+const roda = (cx, cy, R, r, z) => {
+  const t = 2 * Math.PI / z, p = (a, q) => `${(cx + q * Math.cos(a)).toFixed(1)} ${(cy + q * Math.sin(a)).toFixed(1)}`;
+  let d = '';
+  for (let i = 0; i < z; i++) { const a = i * t; d += (i ? 'L' : 'M') + p(a - t * .3, r) + 'L' + p(a - t * .17, R) + 'L' + p(a + t * .17, R) + 'L' + p(a + t * .3, r); }
+  return d + 'Z';
+};
+const CORACAO = 'M0 38C-50 6-48-34-21-34-8-34 0-24 0-17 0-24 8-34 21-34 48-34 50 6 0 38Z';
+const FIOS = ['M306 384V530', 'M306 412C306 398 322 392 342 392H440Q468 392 468 420V496Q468 524 440 524H342C322 524 306 520 306 510', 'M306 436C306 450 336 444 336 460V464C336 480 306 474 306 488', 'M387 392V418', 'M387 524V498', 'M468 458H434'];
+const NOS = [[306, 384], [306, 412], [306, 436], [336, 462], [306, 488], [306, 510], [306, 530], [387, 392], [468, 458], [387, 524]];
+const BRACO = '<rect class="c" x="-18" y="-4" width="36" height="66" rx="12"/><path class="d" d="M-18 14h36M-18 28h36M-18 42h36"/><rect class="c" x="-16" y="90" width="32" height="58" rx="10"/><path class="d" d="M-7 108h14M-7 122h14"/><circle class="c" cy="76" r="19"/><circle class="d" cy="76" r="7"/>';
+const MAO = '<rect class="c miudo" x="-24" y="30" width="13" height="30" rx="6.5"/><rect class="c miudo" x="-6.5" y="34" width="13" height="32" rx="6.5"/><rect class="c miudo" x="11" y="30" width="13" height="30" rx="6.5"/><rect class="c miudo" x="-6" y="0" width="12" height="28" rx="6" transform="translate(29 12) rotate(-38)"/><rect class="c" x="-25" y="2" width="50" height="38" rx="13"/><rect class="c miudo" x="-11" y="-8" width="22" height="13" rx="3"/>';
+const olho = x => `<g class="olho"><circle class="branco" cx="${x}" cy="200" r="32"/><g class="pupila"><circle class="pupila-o" cx="${x}" cy="200" r="15"/><circle class="brilho" cx="${x + 6}" cy="194" r="4.5"/></g></g>`;
+
+const PECAS = [
+  { nome: 'Pés', g: 'os', a: [238, 750], svg: M('<path class="c" d="M238 768C236 738 258 716 292 716h28c24 0 38 22 38 52q0 4-6 4H244q-6 0-6-4z"/><path class="d" d="M241 752h114"/><rect class="c" x="272" y="702" width="52" height="16" rx="5"/><circle class="d" cx="298" cy="735" r="6"/>') },
+  { nome: 'Pernas', g: 'as', a: [274, 654], svg: M('<rect class="c" x="274" y="588" width="48" height="56" rx="8"/><path class="d" d="M274 602h48M274 614h48M274 626h48"/><path class="c" d="M276 672h44l6 34a4 4 0 0 1-4 5h-48a4 4 0 0 1-4-5z"/><path class="d" d="M286 686h24"/><circle class="c" cx="298" cy="654" r="24"/><circle class="d" cx="298" cy="654" r="9"/>') },
+  { nome: 'Tronco', g: 'o', a: [232, 540], svg: '<rect class="c" x="340" y="320" width="80" height="28" rx="8"/><path class="d" d="M352 334h56"/>' + M('<circle class="c" cx="232" cy="392" r="21"/><circle class="d" cx="232" cy="392" r="8"/>') + '<path class="c" d="M272 340H488Q528 340 528 380V536Q528 596 468 596H292Q232 596 232 536V380Q232 340 272 340Z"/><rect class="cav" x="272" y="368" width="216" height="176" rx="20"/>' + `<path class="encaixe" transform="translate(387 458) scale(.8)" d="${CORACAO}"/>` + '<path class="d" d="M318 562h124M338 577h84"/>' + M('<circle class="d" cx="252" cy="360" r="4"/><circle class="d" cx="256" cy="572" r="4"/>') },
+  { nome: 'Fiação', g: 'a', a: [272, 492], hit: [272, 368, 216, 176], svg: `<path class="guia" d="${FIOS.join('')}"/>` + FIOS.map(d => `<path class="fio" d="${d}"/>`).join('') + NOS.map(([x, y]) => `<circle class="no" cx="${x}" cy="${y}" r="6.5"/>`).join('') },
+  { nome: 'Engrenagens', g: 'as', pos: 'translate(128 452) scale(.85)', fim: 'translate(262 566) scale(.3)', a: [-46, 8], svg: `<g class="gira"><path class="c" d="${roda(0, 0, 46, 35, 11)}"/><circle class="d" r="12"/></g><g class="gira2"><path class="c" d="${roda(58, 42, 28, 20, 7)}"/><circle class="d" cx="58" cy="42" r="7"/></g>` },
+  { nome: 'Cérebro', g: 'o', pos: 'translate(152 366)', fim: 'translate(380 152) scale(.75)', a: [-54, 2], svg: (l => l + `<g transform="scale(-1 1)">${l}</g>`)('<path class="c" d="M-3-36C-14-48-36-46-41-30-55-28-58-8-47-1-56 10-46 30-31 27-25 40-10 40-3 31Z"/><path class="d" d="M-15-30C-26-28-27-14-17-11-28-7-29 7-16 10"/>') },
+  { nome: 'Cabeça', g: 'a', fim: 'translate(0 30)', a: [238, 212], svg: '<g class="giro">' + M('<rect class="c" x="238" y="172" width="22" height="66" rx="8"/>') + '<rect class="c" x="356" y="284" width="48" height="36" rx="6"/><rect class="c" x="258" y="120" width="244" height="170" rx="46"/><rect class="d" x="278" y="140" width="204" height="130" rx="32"/>' + olho(332) + olho(428) + '<path class="boca" d="M352 250Q380 270 408 250"/></g>' },
+  { nome: 'Braço esquerdo', g: 'o', pos: 'translate(170 222) rotate(150)', fim: 'translate(212 392) rotate(12)', a: [18, 72], svg: BRACO },
+  { nome: 'Mão esquerda', g: 'a', pos: 'translate(90 84) rotate(150) scale(1.15)', fim: 'translate(180 540) rotate(12)', a: [31, 34], svg: MAO },
+  { nome: 'Cabo e plugue', g: 'os', pos: 'translate(508 64)', fim: 'translate(500 190) scale(.6)', a: [184, -8], svg: '<path class="f" d="M0 0C36-40 86 40 130 0"/><circle class="c" r="7"/><rect class="c" x="168" y="-11" width="16" height="6"/><rect class="c" x="168" y="5" width="16" height="6"/><rect class="c" x="128" y="-17" width="40" height="34" rx="7"/>' },
+  { nome: 'Chave de corda', g: 'a', pos: 'translate(596 138) scale(.78)', fim: 'translate(522 235) scale(.78)', a: [106, -21], svg: '<g class="vira"><rect class="c miudo" y="-6" width="52" height="12" rx="3"/><path class="c" d="M50-9C58-9 60-15 62-23 66-46 106-46 106-21 106-7 90-5 80 0 90 5 106 7 106 21 106 46 66 46 62 23 60 15 58 9 50 9Z"/><circle class="d" cx="84" cy="-22" r="9"/><circle class="d" cx="84" cy="22" r="9"/></g>' },
+  { nome: 'Escudo', g: 'o', pos: 'translate(676 212) scale(.9)', fim: 'translate(560 500) scale(.7)', a: [36, -24], svg: '<path class="c" d="M0-38C13-30 25-28 36-28 36 6 26 28 0 42-26 28-36 6-36-28-25-28-13-30 0-38Z"/><circle class="d" cy="-6" r="8"/><path class="d" d="M-4 1-7 18H7L4 1"/>' },
+  { nome: 'Braço direito', g: 'o', pos: 'translate(556 344) rotate(-110) scale(.8)', fim: 'translate(548 392) rotate(-12)', a: [0, 226], svg: BRACO + `<g transform="translate(0 158)">${MAO}</g>` },
+  { nome: 'Drone ajudante', g: 'o', pos: 'translate(692 368)', fim: 'translate(610 300) scale(.8)', a: [21, -6], svg: '<path class="d" d="M0-20V-31"/><ellipse class="c miudo" cy="-34" rx="27" ry="5"/><circle class="c" r="21"/><circle class="s" cx="-8" cy="-3" r="3.6"/><circle class="s" cx="8" cy="-3" r="3.6"/><path class="boca fina" d="M-7 8Q0 13 7 8"/><path class="d" d="M-12 17-19 29M12 17 19 29"/>' },
+  { nome: 'Antena', g: 'a', pos: 'translate(612 478)', fim: 'translate(380 124)', a: [38, -72], svg: '<rect class="c" x="-18" y="-8" width="36" height="12" rx="3"/><path class="f" d="M0-8V-64"/><circle class="c" cy="-72" r="8"/><path class="d" d="M-17-85Q-27-72-17-59M17-85Q27-72 17-59M-27-95Q-42-72-27-49M27-95Q42-72 27-49"/>' },
+  { nome: 'Mochila a jato', g: 'a', pos: 'translate(592 534)', fim: 'translate(560 470) scale(.8)', a: [36, -18], svg: '<rect class="c" x="-36" y="-40" width="32" height="72" rx="15"/><rect class="c" x="4" y="-40" width="32" height="72" rx="15"/><rect class="c" x="-8" y="-22" width="16" height="16" rx="3"/><path class="c" d="M-30 32h20l4 12h-28zM10 32h20l4 12H6z"/><path class="d" d="M-20 48q-8 10 0 18 8-8 0-18ZM20 48q-8 10 0 18 8-8 0-18Z"/>' },
+  { nome: 'Medidor', g: 'o', pos: 'translate(695 556)', fim: 'translate(300 572) scale(.35)', a: [35, -8], svg: '<rect class="c" x="-10" y="33" width="20" height="9" rx="2"/><circle class="c" r="35"/><path class="d" d="M-26 9A27 27 0 0 1 26 9"/><g transform="rotate(30)"><g class="ponteiro"><path class="boca" d="M0 0V-24"/></g></g><circle class="s" r="4.5"/>' },
+  { nome: 'Coração', g: 'o', pos: 'translate(590 652) scale(1.12)', fim: 'translate(387 458) scale(.8)', a: [45, -12], svg: `<path class="c" d="${CORACAO}"/><path class="boca" d="M-11-9A15 15 0 1 0 11-9M0-17V-1"/>` }
+];
+/* Linhas de montagem: do lugar onde a peça flutua até onde ela entra. */
+const MONTA = [[190, 468, 240, 482], [196, 340, 264, 282], [176, 244, 226, 374], [510, 64, 470, 124], [596, 138, 524, 196], [546, 340, 532, 376], [556, 528, 528, 508], [542, 636, 440, 512]];
+(function () {
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const toque = matchMedia('(hover: none)').matches;
+  const eCel = () => innerWidth <= 980;
+  const mqLista = matchMedia('(max-width:980px),(max-aspect-ratio:11/10)'), eLista = () => mqLista.matches;
+  const robo = $('#robo'), linhas = $('#linhas'), folha = $('#folha'), lupa = $('#lupa');
+  const NS = 'http://www.w3.org/2000/svg';
+  const novo = (tag, at = {}) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); return e; };
+  const limita = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  /* 1. Monta o desenho */
+  let hachura = '';
+  for (let x = 184; x < 584; x += 14) hachura += `M${x} 772l-10 10`;
+  robo.innerHTML = `<g id="tec">
+      <path class="tecnico eixo" d="M380 4V792"/>
+      <path class="piso" d="M172 772H588"/><path class="tecnico" d="${hachura}"/>
+      ${MONTA.map(([a, b, c, d]) => `<path class="monta" d="M${a} ${b}L${c} ${d}"/>`).join('')}
+      <g class="cota-g">
+        <path class="cota" d="M736 772h24M736 18h24M748 30V760"/><path class="cota-seta" d="M748 18l-5 14h10zM748 772l-5-14h10z"/>
+        <path class="cota-voce" d="M734 458l11-6v12z"/>
+        <text class="cota-txt" transform="translate(748 76) rotate(-90)">agente</text>
+        <text class="cota-txt cota-voce" transform="translate(748 458) rotate(-90)">você</text>
+        <text class="cota-txt" transform="translate(748 700) rotate(-90)">zero</text>
+        <path class="cota" d="M238 780v18M522 780v18M250 791H510"/><path class="cota-seta" d="M238 791l14-5v10zM522 791l-14-5v10z"/>
+        <text class="cota-txt cota-num" x="380" y="791">3 de 18 peças montadas</text>
+      </g>
+    </g>
+    <g id="pecas">${PECAS.map((p, n) => {
+      const e = Kit.estado(n), t = e === 'futuro' ? p.pos : p.fim;
+      return `<g class="peca ${e}" data-n="${n}"${t ? ` transform="${t}"` : ''} style="--atraso:${(-(n * .73) % 3.4).toFixed(2)}s"><g class="hov"><g class="bob">${p.svg}</g></g></g>`;
+    }).join('')}</g>`;
+  const pecaEl = $$('.peca', robo);
+  const raiz = () => robo.getScreenCTM();
+
+  /* Pontos de chegada das linhas, medidos antes de qualquer animação */
+  const ancora = PECAS.map((p, n) => {
+    const m = raiz().inverse().multiply(pecaEl[n].getScreenCTM());
+    return new DOMPoint(p.a[0], p.a[1]).matrixTransform(m);
+  });
+  /* Área de clique folgada em cada peça, menos no tronco, que já é grande */
+  const caixas = pecaEl.map(el => el.querySelector('.bob').getBBox());
+  pecaEl.forEach((el, n) => {
+    if (n === 2) return;
+    const q = PECAS[n].hit, b = caixas[n], f = 7;
+    const r = q ? novo('rect', { x: q[0], y: q[1], width: q[2], height: q[3] }) : novo('rect', { x: b.x - f, y: b.y - f, width: b.width + 2 * f, height: b.height + 2 * f });
+    r.setAttribute('class', 'hit');
+    el.querySelector('.hov').prepend(r);
+  });
+  /* Números sobre o robô, usados só no celular */
+  const grupoBal = novo('g', { id: 'baloes' });
+  ancora.forEach((a, n) => {
+    const g = novo('g', { class: `bal-m ${Kit.estado(n)}`, 'data-n': n, transform: `translate(${a.x.toFixed(1)} ${a.y.toFixed(1)})` });
+    g.innerHTML = `<circle r="17"/><text>${n}</text>`;
+    grupoBal.append(g);
+  });
+  robo.append(grupoBal);
+
+  /* 2. Chamadas numeradas (no celular, a lista de peças com desenho) */
+  const item = n => {
+    const m = window.CURSO[n], p = PECAS[n], e = Kit.estado(n);
+    const nota = e === 'feito' ? `${p.nome} montad${p.g}` : e === 'atual' ? `${p.nome}: desenhando agora` : p.nome;
+    const fala = e === 'feito' ? 'Concluído' : e === 'atual' ? 'Você está aqui' : 'Ainda por fazer';
+    return `<li><button class="ch ${e}" type="button" data-n="${n}" aria-label="Módulo ${n}: ${m.t}. Peça: ${p.nome}. ${fala}."><svg class="mini" aria-hidden="true"></svg><span class="bal">${n}</span><span class="txt"><span class="nome">${m.t}</span><span class="nota">${nota}</span></span></button></li>`;
+  };
+  $('#col-e').innerHTML = window.CURSO.slice(0, 9).map(m => item(m.n)).join('');
+  $('#col-d').innerHTML = window.CURSO.slice(9).map(m => item(m.n)).join('');
+  $('#col-e').setAttribute('start', 0);
+  $('#col-d').setAttribute('start', 9);
+  const chEl = window.CURSO.map(m => $(`.ch[data-n="${m.n}"]`));
+
+  /* Desenhos pequenos da lista: cópia de cada peça, recortada sob medida */
+  const medida = novo('g', { visibility: 'hidden' });
+  robo.append(medida);
+  const VISTA_MINI = { 7: 55, 8: 180, 12: -125 };
+  const internos = chEl.map((b, n) => {
+    const interno = novo('g', { class: `peca ${Kit.estado(n)}` });
+    const giro = novo('g', VISTA_MINI[n] ? { transform: `rotate(${VISTA_MINI[n]})` } : {});
+    giro.innerHTML = pecaEl[n].querySelector('.bob').innerHTML;
+    if (n < 2) giro.querySelector('g[transform^="matrix"]').remove();
+    if (n === 12) { giro.firstElementChild.remove(); giro.firstElementChild.remove(); }
+    interno.append(giro);
+    medida.append(interno);
+    return interno;
+  });
+  const caixasM = internos.map(i => i.getBBox());
+  chEl.forEach((b, n) => {
+    const c = caixasM[n], mini = b.querySelector('.mini');
+    mini.setAttribute('viewBox', `${(c.x - 3).toFixed(1)} ${(c.y - 3).toFixed(1)} ${(c.width + 6).toFixed(1)} ${(c.height + 6).toFixed(1)}`);
+    mini.append(internos[n]);
+  });
+  medida.remove();
+
+  /* 3. Linhas de chamada */
+  let linhaEl = [], pontoEl = [], emAbertura = false;
+  function medir() {
+    linhas.innerHTML = '';
+    linhaEl = []; pontoEl = [];
+    if (eLista()) return;
+    const fr = folha.getBoundingClientRect(), r = raiz();
+    chEl.forEach((b, n) => {
+      const q = b.querySelector('.bal').getBoundingClientRect(), esq = n < 9, e = Kit.estado(n);
+      const sx = (esq ? q.right : q.left) - fr.left, sy = q.top + q.height / 2 - fr.top;
+      const t = ancora[n].matrixTransform(r), tx = t.x - fr.left, ty = t.y - fr.top, jx = sx + (esq ? 12 : -12);
+      if (e === 'atual') {
+        const c = Math.hypot(tx - jx, ty - sy), k = Math.min(70, c) / c;
+        linhas.append(novo('path', { class: 'capa', d: `M${tx - (tx - jx) * k} ${ty - (ty - sy) * k}L${tx} ${ty}` }));
+      }
+      const l = novo('path', { class: e, d: `M${sx} ${sy}H${jx}L${tx} ${ty}` }), o = novo('circle', { class: e, cx: tx, cy: ty, r: e === 'atual' ? 4.5 : 3.2 });
+      linhas.append(l, o);
+      linhaEl[n] = l; pontoEl[n] = o;
+    });
+  }
+
+  /* 4. Destaque cruzado: peça, linha e nome acendem juntos */
+  let quente = null;
+  function aquecer(n) {
+    if (quente === n) return;
+    const troca = (i, on) => [pecaEl[i], chEl[i], linhaEl[i], pontoEl[i]].forEach(e => e && e.classList.toggle('quente', on));
+    if (quente !== null) troca(quente, false);
+    quente = n;
+    if (n !== null) troca(n, true);
+  }
+  const pecaPerto = (x, y) => {
+    let melhor = null, md = 34;
+    pecaEl.forEach((el, i) => {
+      const q = el.querySelector('.bob').getBoundingClientRect();
+      const d = Math.hypot(Math.max(q.left - x, 0, x - q.right), Math.max(q.top - y, 0, y - q.bottom));
+      if (d < md) { md = d; melhor = i; }
+    });
+    return melhor;
+  };
+  const numero = e => { const a = e.target.closest && e.target.closest('[data-n]'); return a ? +a.dataset.n : null; };
+  folha.addEventListener('mouseover', e => aquecer(numero(e)));
+  folha.addEventListener('mouseleave', () => aquecer(null));
+  folha.addEventListener('focusin', e => { const n = numero(e); if (n !== null && e.target.matches(':focus-visible')) aquecer(n); });
+  folha.addEventListener('focusout', () => aquecer(null));
+  folha.addEventListener('click', e => {
+    let n = numero(e);
+    if (n === null && toque && e.target.closest('#robo')) n = pecaPerto(e.clientX, e.clientY);
+    if (n === null) return;
+    const naLista = e.target.closest('.ch');
+    if (!naLista && !eLista()) chEl[n].focus({ preventScroll: true });
+    if (naLista && eLista() && !calmo) { aquecer(n); setTimeout(() => Kit.abrirModulo(n), 170); }
+    else Kit.abrirModulo(n);
+  });
+  $('#continuar').addEventListener('click', () => Kit.continuar());
+
+  /* 5. Caneta e braço mecânico riscando a peça atual */
+  const fios = $$('.peca.atual .fio', robo), fio = fios[0];
+  let tabela = null, comp = 0, pontosN = 0, trechos = [], nosF = [], caneta = null, cotov = null, punho = null, elo = null;
+  const B = { x: 387, y: 530 }, ELO = 98, PUNHO = { x: 11, y: -24 };
+  let cx = 400, cy = 470, ex = 330, ey = 470, lado = 1;
+  if (fio) {
+    trechos = fios.map(el => { const L = el.getTotalLength(), t = { el, ini: comp, L, ult: -1 }; comp += L; el.style.strokeDasharray = L + 'px ' + (L + 8) + 'px'; return t; });
+    const N = pontosN = Math.ceil(comp / 3);
+    tabela = new Float32Array((N + 1) * 2);
+    for (let i = 0, k = 0; i <= N; i++) {
+      const d = i / N * comp;
+      while (k < trechos.length - 1 && d > trechos[k].ini + trechos[k].L) k++;
+      const p = trechos[k].el.getPointAtLength(d - trechos[k].ini);
+      tabela[2 * i] = p.x; tabela[2 * i + 1] = p.y;
+    }
+    const nos = $$('.no', fio.parentNode);
+    nosF = NOS.map(([x, y], k) => {
+      let m = 0;
+      for (let i = 0; i <= N; i++) if (Math.hypot(tabela[2 * i] - x, tabela[2 * i + 1] - y) < 3.5) { m = i / N; break; }
+      return { el: nos[k], em: m * comp };
+    });
+    const g = novo('g', { class: 'braco-g', 'pointer-events': 'none' });
+    g.innerHTML = `<path class="braco-b" d="M${B.x - 22} 544l6-14h32l6 14z"/><path class="braco-c"/><path class="braco-l"/><path class="braco-n"/><circle class="braco-j" cx="${B.x}" cy="${B.y}" r="8"/><circle class="braco-j cot" r="6.5"/><circle class="braco-j pun" r="4.5"/><g class="caneta-g"><path class="caneta-p" d="M0 0 2.5-8 8-6Z"/><path class="caneta" d="M2.5-8 9-26 15-24 8-6Z"/></g>`;
+    robo.insertBefore(g, grupoBal);
+    elo = [g.querySelector('.braco-c'), g.querySelector('.braco-l'), g.querySelector('.braco-n')]; cotov = g.querySelector('.cot'); punho = g.querySelector('.pun'); caneta = g.querySelector('.caneta-g');
+  }
+  function posicionaBraco(px, py, tempo) {
+    const wx = px + PUNHO.x, wy = py + PUNHO.y, dx = wx - B.x, dy = wy - B.y, d = Math.min(Math.hypot(dx, dy) || 1, 2 * ELO - .5);
+    const ux = dx / d, uy = dy / d, h = Math.sqrt(ELO * ELO - d * d / 4), mx = B.x + ux * d / 2, my = B.y + uy * d / 2;
+    const ponto = s => ({ x: mx - s * uy * h, y: my + s * ux * h });
+    let a = ponto(lado);
+    if (a.y > 536 || a.x < 280 || a.x > 482) { lado = -lado; a = ponto(lado); }
+    ex += (a.x - ex) * .16; ey += (a.y - ey) * .16;
+    const dArm = `M${B.x} ${B.y}L${ex.toFixed(1)} ${ey.toFixed(1)}L${wx.toFixed(1)} ${wy.toFixed(1)}`;
+    elo.forEach(q => q.setAttribute('d', dArm));
+    punho.setAttribute('cx', wx.toFixed(1)); punho.setAttribute('cy', wy.toFixed(1));
+    cotov.setAttribute('cx', ex.toFixed(1)); cotov.setAttribute('cy', ey.toFixed(1));
+    caneta.setAttribute('transform', `translate(${px.toFixed(1)} ${py.toFixed(1)}) rotate(${(Math.sin(tempo / 80) * 2.4).toFixed(1)})`);
+  }
+
+  /* 6. Olhos e cabeça: seguem o mouse; sem mouse, olham a caneta trabalhar */
+  const pupilas = $$('.pupila', pecaEl[6]), giro = $('.giro', pecaEl[6]);
+  const OLHOS = [[332, 200], [428, 200]], ol = [[0, 0], [0, 0]];
+  let mouse = null, mouseT = -1e9, hr = 0, hx = 0, hy = 0;
+  addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    mouse = new DOMPoint(e.clientX, e.clientY).matrixTransform(raiz().inverse());
+    mouseT = performance.now();
+    if (calmo) olhar(mouse.x, mouse.y, 1, false);
+  }, { passive: true });
+  function olhar(tx, ty, k, cabeca) {
+    OLHOS.forEach(([x, y], i) => {
+      const vx = tx - x, vy = ty - y, m = Math.hypot(vx, vy) || 1, o = Math.min(13, m / 14);
+      ol[i][0] += (vx / m * o - ol[i][0]) * k; ol[i][1] += (vy / m * o - ol[i][1]) * k;
+      pupilas[i].setAttribute('transform', `translate(${ol[i][0].toFixed(2)} ${ol[i][1].toFixed(2)})`);
+    });
+    if (!cabeca) return;
+    hr += (limita((tx - 380) / 70, -6, 6) - hr) * k;
+    hx += (limita((tx - 380) / 90, -5, 5) - hx) * k;
+    hy += (limita((ty - 200) / 110, -3, 5) - hy) * k;
+    giro.setAttribute('transform', `translate(${hx.toFixed(2)} ${hy.toFixed(2)}) rotate(${hr.toFixed(2)} 380 300)`);
+  }
+
+  /* 7. Relógio único */
+  let dist = 0, fase = 'risca', faseT = 0, ultimo = 0, quadro = 0, visivel = true, aberto = false, lendo = false, iniciou = false;
+  function traco(valor) {
+    if (!fio) return;
+    trechos.forEach(t => {
+      const v = limita(valor - t.ini, 0, t.L);
+      if (v === t.ult) return;
+      t.ult = v;
+      t.el.style.visibility = v > 0 ? 'visible' : 'hidden';
+      t.el.style.strokeDashoffset = (t.L - v) + 'px';
+    });
+    nosF.forEach(q => { q.el.style.opacity = valor >= q.em ? 1 : 0; });
+  }
+  function relogio(agora) {
+    requestAnimationFrame(relogio);
+    if (!visivel || lendo || (aberto && eCel())) { ultimo = agora; return; }
+    if (toque && ++quadro % 2) return;
+    const dt = Math.min(60, agora - ultimo); ultimo = agora;
+    if (fio && iniciou) {
+      if (fase === 'risca') {
+        const f = dist / comp * pontosN, i = Math.min(pontosN - 1, Math.floor(f)), r = f - i;
+        const ax = tabela[2 * i] + (tabela[2 * i + 2] - tabela[2 * i]) * r, ay = tabela[2 * i + 1] + (tabela[2 * i + 3] - tabela[2 * i + 1]) * r, d = Math.hypot(ax - cx, ay - cy);
+        if (d > 5) { const k = Math.min(1, dt / 90); cx += (ax - cx) * k; cy += (ay - cy) * k; }
+        else {
+          cx = ax; cy = ay;
+          dist += dt * .092;
+          if (dist >= comp) { dist = comp; fase = 'espera'; faseT = agora; }
+          traco(dist);
+        }
+      } else if (fase === 'espera' && agora - faseT > 1100) {
+        fase = 'apaga'; faseT = agora;
+      } else if (fase === 'apaga') {
+        const o = 1 - (agora - faseT) / 520;
+        fios.forEach(q => { q.style.opacity = Math.max(0, o); });
+        nosF.forEach(q => { q.el.style.opacity = Math.max(0, o); });
+        if (o <= 0) { dist = 0; traco(0); fios.forEach(q => { q.style.opacity = 1; }); fase = 'risca'; }
+      }
+      posicionaBraco(cx, cy, agora);
+    }
+    const comMouse = mouse && agora - mouseT < 2600;
+    const alvo = comMouse ? mouse : (fio ? { x: cx, y: cy } : { x: 380, y: 300 });
+    olhar(alvo.x, alvo.y, .13, true);
+  }
+
+  /* 8. Abertura: as linhas são riscadas em sequência e as peças prontas encaixam */
+  function abertura() {
+    emAbertura = true;
+    robo.classList.add('riscando');
+    if (toque) robo.classList.add('leve');
+    const sel = toque ? '.c,.f,.cav,.boca' : '.c,.f,.d,.cav,.boca,.encaixe';
+    $('#tec').animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, fill: 'backwards' });
+    pecaEl.forEach((el, n) => {
+      const ini = 120 + n * 62;
+      $$(sel, el).forEach((s, i) => {
+        const L = s.getTotalLength();
+        s.style.strokeDasharray = L + 'px';
+        s.animate([{ strokeDashoffset: L + 'px' }, { strokeDashoffset: '0px' }], { duration: 520, delay: ini + i * 16, easing: 'ease-in-out', fill: 'backwards' })
+          .onfinish = () => { s.style.strokeDasharray = ''; };
+      });
+    });
+    if (!eLista()) chEl.forEach((b, n) => {
+      const ini = 420 + n * 74, l = linhaEl[n], o = pontoEl[n];
+      b.animate([{ opacity: 0, transform: `translateX(${n < 9 ? -8 : 8}px)` }, { opacity: 1, transform: 'none' }], { duration: 300, delay: ini, easing: 'ease-out', fill: 'backwards' });
+      if (!l) return;
+      const L = l.getTotalLength();
+      l.style.strokeDasharray = L + 'px';
+      l.animate([{ strokeDashoffset: L + 'px' }, { strokeDashoffset: '0px' }], { duration: 400, delay: ini, easing: 'ease-out', fill: 'backwards' })
+        .onfinish = () => { l.style.strokeDasharray = ''; };
+      o.animate([{ opacity: 0 }, { opacity: .9 }], { duration: 120, delay: ini + 380, fill: 'backwards' });
+    });
+    /* Pés, pernas e tronco descem e encaixam, com um pequeno tranco */
+    let ordem = 0;
+    pecaEl.forEach((el, n) => {
+      if (Kit.estado(n) !== 'feito' || PECAS[n].fim) return;
+      const atraso = 1440 + ordem * 130;
+      el.animate([{ transform: `translateY(${-(16 + ordem * 13)}px)` }, { transform: 'none' }], { duration: 400, delay: atraso, easing: 'cubic-bezier(.34,1.7,.55,1)', fill: 'backwards' });
+      ordem++;
+    });
+    $('#palco').animate([{ transform: 'none' }, { transform: 'translateY(4px)' }, { transform: 'none' }], { duration: 190, delay: 1440 + (ordem - 1) * 130 + 170 });
+    setTimeout(() => { iniciou = true; }, 520);
+    setTimeout(() => { robo.classList.remove('riscando', 'leve'); }, 1700);
+    setTimeout(() => { robo.classList.add('solta'); emAbertura = false; medir(); }, 2300);
+  }
+
+  /* 9. Detalhe ampliado da peça, por cima do véu */
+  let lupaTok = 0, voo = null, lupaN = null;
+  function montaAnel(cxA, cyA, r) {
+    const g = novo('g', { class: 'anel' });
+    g.innerHTML = `<circle class="anel-f" cx="${cxA}" cy="${cyA}" r="${r}"/><circle class="anel-i" cx="${cxA}" cy="${cyA}" r="${r - 9}"/>`;
+    return g;
+  }
+  function abreLupa(n) {
+    const tok = ++lupaTok, W = innerWidth, H = innerHeight, cel = eCel();
+    lupaN = n;
+    aquecer(null);
+    aberto = true;
+    robo.classList.toggle('longe', cel || !visivel);
+    lupa.innerHTML = '';
+    lupa.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    lupa.classList.toggle('parado', calmo);
+    lupa.classList.toggle('cel', cel);
+    const el = pecaEl[n], bb = el.querySelector('.bob').getBBox(), rz = raiz();
+    const local = rz.inverse().multiply(el.getScreenCTM());
+    let m, ax, ay, cxA, cyA, r;
+    const fx = novo('g', { class: 'fx' });
+    if (cel) {
+      const sh = H * .22;
+      if (sh < 96) { lupa.classList.remove('on'); return; }
+      const so = (sh - 14) / 800, tx = 12, ty = 7;
+      const t = novo('rect', { class: 'tira', x: 0, y: 0, width: W, height: sh });
+      const ov = novo('g', { class: 'ov', transform: `translate(${tx} ${ty}) scale(${so})` });
+      const copia = $('#pecas', robo).cloneNode(true);
+      copia.removeAttribute('id');
+      $$('.hit,.bal-m', copia).forEach(q => q.remove());
+      $$('.fio,.no', copia).forEach(q => q.removeAttribute('style'));
+      copia.querySelector(`[data-n="${n}"]`).classList.add('alvo');
+      ov.append(copia);
+      fx.append(t, novo('path', { class: 'tira-l', d: `M0 ${sh}H${W}` }), ov);
+      m = new DOMMatrix([so, 0, 0, so, tx, ty]).multiply(local);
+      ax = tx + so * ancora[n].x; ay = ty + so * ancora[n].y;
+      r = Math.min(sh / 2 - 9, 76); cxA = W - r - 16; cyA = sh / 2;
+    } else {
+      const painel = Math.min(460, W), desvio = eLista() ? 0 : painel / 2;
+      const jaMovido = new DOMMatrix(getComputedStyle(folha).transform).e;
+      folha.style.setProperty('--desvio', desvio + 'px');
+      m = rz.multiply(local);
+      m = new DOMMatrix([m.a, m.b, m.c, m.d, m.e - jaMovido - desvio, m.f]);
+      const aS = ancora[n].matrixTransform(rz);
+      ax = aS.x - jaMovido - desvio; ay = aS.y;
+      r = Math.min(170, (W - painel) * .175, (H - 200) * .3);
+      cxA = n < 9 ? r + 24 : W - painel - r - 24;
+      const topo = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--k-topo-h')) || 58;
+      cyA = limita(ay, topo + r + 14, H - r - 84);
+      folha.classList.add('aberta');
+    }
+    const s = limita(2 * r * .8 / Math.hypot(bb.width, bb.height), .4, 3.6);
+    const giroV = n === 8 || n === 12 ? -1 : 1, bcx = bb.x + bb.width / 2, bcy = bb.y + bb.height / 2;
+    const final = `matrix(${s * giroV},0,0,${s * giroV},${cxA - s * giroV * bcx},${cyA - s * giroV * bcy})`;
+    const inicio = `matrix(${m.a},${m.b},${m.c},${m.d},${m.e},${m.f})`;
+    const vx = ax - cxA, vy = ay - cyA, vd = Math.hypot(vx, vy) || 1;
+    fx.append(novo('path', { class: 'liga', d: `M${ax} ${ay}L${cxA + vx / vd * r} ${cyA + vy / vd * r}` }), novo('circle', { class: 'liga-o', cx: ax, cy: ay, r: cel ? 5 : 13 }));
+    const anel = montaAnel(cxA, cyA, r);
+    const nivel = novo('g', { class: `peca ${Kit.estado(n)}` });
+    const cl = novo('g', { class: 'cl' });
+    cl.innerHTML = el.querySelector('.bob').innerHTML;
+    $$('.olho', cl).forEach(o => o.removeAttribute('style'));
+    $$('.fio,.no', cl).forEach(o => o.removeAttribute('style'));
+    nivel.append(cl);
+    lupa.append(fx, anel, nivel);
+    if (!cel) {
+      const t1 = novo('text', { class: 'tit-d', x: cxA, y: cyA + r + 25 }); t1.textContent = `Detalhe da peça ${n}`;
+      const t2 = novo('text', { class: 'tit-p', x: cxA, y: cyA + r + 52 }); t2.textContent = PECAS[n].nome;
+      fx.append(t1, t2);
+    }
+    lupa.classList.add('on');
+    if (calmo) { cl.style.transform = final; voo = { cl, anel, fx, inicio }; return; }
+    cl.style.transform = inicio;
+    anel.style.transform = 'scale(.15)'; anel.style.opacity = 0; fx.style.opacity = 0;
+    cl.getBoundingClientRect();
+    requestAnimationFrame(() => {
+      if (tok !== lupaTok) return;
+      cl.style.transform = final; anel.style.transform = 'none'; anel.style.opacity = 1; fx.style.opacity = 1;
+    });
+    voo = { cl, anel, fx, inicio };
+  }
+  function fechaLupa() {
+    const tok = ++lupaTok;
+    aberto = false;
+    robo.classList.toggle('longe', !visivel);
+    aquecer(null);
+    folha.classList.remove('aberta');
+    const limpar = () => { if (tok === lupaTok) { lupa.classList.remove('on'); lupa.innerHTML = ''; voo = null; } };
+    if (!voo || calmo) return limpar();
+    voo.cl.style.transform = voo.inicio; voo.anel.style.transform = 'scale(.15)'; voo.anel.style.opacity = 0; voo.fx.style.opacity = 0;
+    setTimeout(limpar, 300);
+  }
+  document.addEventListener('k-modulo', e => abreLupa(e.detail));
+  document.addEventListener('k-fechar', fechaLupa);
+
+  /* 10. Economia: nada se mexe com a aula aberta ou com o robô fora da tela */
+  const aulaEl = $('.k-aula');
+  new MutationObserver(() => { lendo = aulaEl.classList.contains('on'); document.body.classList.toggle('lendo', lendo); }).observe(aulaEl, { attributes: true, attributeFilter: ['class'] });
+  new IntersectionObserver(([e]) => { visivel = e.isIntersecting; robo.classList.toggle('longe', !visivel); }).observe(robo);
+
+  /* 11. Partida */
+  let espera;
+  addEventListener('resize', () => { clearTimeout(espera); espera = setTimeout(() => { if (!emAbertura) medir(); if (aberto) abreLupa(lupaN); }, 120); });
+  medir();
+  if (calmo) {
+    if (fio) { traco(comp); cx = 468; cy = 458; for (let i = 0; i < 30; i++) posicionaBraco(cx, cy, 0); }
+  } else {
+    if (fio) { traco(0); cx = tabela[0]; cy = tabela[1]; ex = 330; ey = 470; posicionaBraco(cx, cy, 0); }
+    abertura();
+    requestAnimationFrame(relogio);
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (!emAbertura) medir(); });
+})();
+</script>
+</body>
+</html>

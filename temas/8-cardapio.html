@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Do zero ao agente: o cardápio</title>
+<meta name="theme-color" content="#3b2616">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e2725'/%3E%3Cpath d='M5 23H27M7 22C7 13 25 13 25 22M16 15V11' fill='none' stroke='%23f6f2e7' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>
+/* A lousa nasce vazia. A trava de 5 s garante o menu visível mesmo se algo falhar. */
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  document.documentElement.classList.add('intro');
+  setTimeout(function(){document.documentElement.classList.remove('intro','escrevendo','marcando')},5000);
+}
+/* A folha de fontes não trava a primeira pintura: a sala escura aparece na hora. */
+function poeFontes(l){
+  l.media='all';
+  window.fontesPedidas=Promise.all(['100px "Fredericka the Great"','30px "Caveat Brush"','20px "Patrick Hand"'].map(function(f){return document.fonts.load(f,'\u00e7\u00e3\u00e9a')}));
+}
+</script>
+<link id="fontes" rel="stylesheet" media="print" onload="poeFontes(this)" onerror="poeFontes(this)" href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,600;0,700;1,400&family=Caveat+Brush&family=Fredericka+the+Great&family=Patrick+Hand&display=swap">
+<style>
+:root{
+  --k-topo-fundo:#3b2616;--k-topo-texto:#f8efdc;--k-acento:#f4c64f;--k-acento-texto:#2a1b0e;
+  --k-painel-fundo:#f8f1dc;--k-painel-texto:#1c2f6b;--k-linha:#b4c7de;
+  --k-titulo:'Caveat Brush','Segoe Print','Bradley Hand',cursive;
+  --k-texto:'Bitter',Georgia,'Times New Roman',serif;
+  --k-raio:10px;
+  --k-leitura-fundo:#fbf6e6;--k-leitura-texto:#2b2219;--k-leitura-caixa:#f2e8cb;
+  --k-leitura-fundo-noite:#1b2321;--k-leitura-texto-noite:#efe9da;--k-leitura-caixa-noite:#2a3431;
+  --lousa:#1e2725;--giz:#f6f2e7;--amarelo:#f7d669;--rosa:#f4a9a0;--verde:#a6e3b5;--azul:#a8d4ea;
+  --mao:'Patrick Hand','Segoe Print','Comic Sans MS',cursive;
+  --letreiro:'Fredericka the Great','Caveat Brush',Georgia,serif;
+  --risco:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 235 20' preserveAspectRatio='none'%3E%3Crect width='100.5' height='20'/%3E%3Cpath d='M100 0L102 20L104 0L106.5 20L109 0L112 20L115 0L118.5 20L122 0L126 20L130 0L135 20' fill='none' stroke='%23000' stroke-width='1.8'/%3E%3C/svg%3E");
+  --garfo:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'%3E%3Cg fill='none' stroke-linecap='round' transform='rotate(-38 4 4)'%3E%3Cpath d='M4 3V11C4 15 12 15 12 11V3M8 3V13M8 15V33' stroke='%232a1b0e' stroke-width='4.6'/%3E%3Cpath d='M4 3V11C4 15 12 15 12 11V3M8 3V13M8 15V33' stroke='%23f6f2e7' stroke-width='2.2'/%3E%3C/g%3E%3C/svg%3E") 3 3,pointer;
+  --moldura:calc(.85*var(--u));
+}
+@media (min-width:1100px){
+  :root{--u:min(1vw,calc((100vh - 58px)/58.4));--nome:max(20px,calc(1.8*var(--u)));--desc:max(15.5px,calc(1.22*var(--u)));--preco:max(15px,calc(1.14*var(--u)));--cabec:max(23px,calc(2*var(--u)));--gut:calc(2*var(--u))}
+}
+@media (max-width:1099.98px){
+  :root{--u:11px;--nome:clamp(25px,7.4vw,31px);--desc:clamp(18.5px,5.1vw,21px);--preco:18px;--cabec:clamp(27px,7.9vw,36px);--gut:27px}
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:#2c1810}
+body{margin:0;font-family:var(--mao);font-size:18px;color:var(--giz);overflow-x:hidden}
+.so-leitor{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* Barra de cima: a viga de madeira do bistrô */
+.k-topo{font-family:var(--mao);font-size:18px;background:var(--madeira,none) 0 0/600px 60px,linear-gradient(#513420,#3b2616 62%,#2e1c0f);box-shadow:0 2px 0 #24150a,0 7px 16px rgba(0,0,0,.45)}
+.k-marca{font-size:25px;font-weight:400}
+.k-nav button,.k-bt{min-height:44px}
+.k-troca a{height:44px;min-width:44px}
+
+/* Sala */
+.sala{position:relative;isolation:isolate;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;overflow:clip;padding:calc(var(--k-topo-h) + .45*var(--u)) 4vw calc(2.3*var(--u));background:#7a4630 var(--tijolos,none) 0 0/512px 176px}
+.sala::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(rgba(20,10,5,.2),transparent 26%,transparent 62%,rgba(20,10,5,.5))}
+.noite-veu{position:absolute;inset:0;z-index:0;background:rgba(9,8,24,.56);opacity:0;transition:opacity .5s;pointer-events:none}
+html[data-leitura="noite"] .noite-veu{opacity:1}
+.chao{position:absolute;left:0;right:0;bottom:0;height:calc(2.9*var(--u));z-index:1;background:repeating-linear-gradient(90deg,rgba(0,0,0,.2) 0 2px,transparent 2px 130px),linear-gradient(#3a2415,#22140b);box-shadow:0 -3px 0 #1b0f07,0 -7px 10px rgba(0,0,0,.35)}
+
+/* Quadro */
+.quadro{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;background:#5f3d24 var(--madeira,none) 0 0/600px 60px;border:var(--moldura) solid;border-color:rgba(138,92,56,.8) rgba(112,74,46,.76) rgba(84,54,31,.8) rgba(112,74,46,.76);border-radius:3px;box-shadow:0 0 0 1px #2a190d,0 calc(.7*var(--u)) calc(2.2*var(--u)) rgba(15,8,3,.62)}
+.lousa{position:relative;flex:1;display:flex;flex-direction:column;background:var(--lousa) var(--lousa-tx,none) 0 0/640px;padding:calc(.3*var(--u)) calc(2.3*var(--u)) max(1*var(--u),calc(70px - var(--moldura) - 2.3*var(--u)));box-shadow:inset 0 0 0 1px rgba(0,0,0,.65),inset 0 0 calc(5*var(--u)) rgba(0,0,0,.55)}
+.grao{position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--grao,none) 0 0/256px}
+.marcas{position:absolute;left:0;top:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:visible}
+.marcas path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.aparador{position:absolute;z-index:3;left:calc(-1.5*var(--u));right:calc(-1.5*var(--u));bottom:calc(-1*var(--moldura) - .5*var(--u));height:calc(1.1*var(--u));background:var(--madeira,none) 0 0/600px 60px,linear-gradient(#946240,#5f3d23 58%,#3d2613);border-radius:2px;box-shadow:0 .3em .7em rgba(0,0,0,.55)}
+.gizes{position:absolute;right:7%;bottom:92%;display:flex;align-items:flex-end;gap:7px}
+.gizes i{display:block;width:calc(3*var(--u));height:calc(.55*var(--u));min-height:6px;border-radius:2px;background:linear-gradient(#fffdf5,#d8d3c3)}
+.gizes i:nth-child(2){width:calc(1.8*var(--u));background:linear-gradient(#ffe48c,#d6ae3d)}
+.gizes i:nth-child(3){width:calc(2.4*var(--u));background:linear-gradient(#ffc1b8,#d4806f)}
+.gizes b{display:block;width:calc(5*var(--u));height:calc(1.1*var(--u));min-height:12px;margin-left:10px;border-radius:2px;background:linear-gradient(#caa97e 0 42%,#40423f 42%)}
+
+/* Cabeçalho */
+.cabeca{position:relative;text-align:center}
+.titulo{margin:0;font-weight:400;line-height:0}
+.titulo svg{display:block;margin:0 auto;height:calc(6.8*var(--u));max-width:100%;overflow:visible}
+.titulo text{font-family:var(--letreiro);font-size:100px;fill:var(--giz)}
+.sub{display:flex;justify-content:center;align-items:center;gap:calc(2*var(--u));margin-top:calc(.3*var(--u))}
+.frase{margin:0;font-family:var(--k-titulo);font-size:max(19px,calc(1.85*var(--u)));line-height:1.1;text-wrap:balance}
+.continuar{appearance:none;border:0;min-height:44px;padding:calc(.5*var(--u)) calc(1.5*var(--u));font-family:var(--k-titulo);font-size:max(19px,calc(1.75*var(--u)));line-height:1.1;color:#2a1b0e;background:repeating-linear-gradient(-58deg,#f7d669 0 3px,#f3cd58 3px 5px,#f9dd80 5px 8px);border-radius:255px 18px 225px 18px/18px 225px 18px 255px;cursor:pointer;transition:transform .15s;position:relative;z-index:4}
+.continuar:hover{transform:rotate(-1deg) scale(1.03)}
+.continuar:active{transform:scale(.98)}
+.continuar span{white-space:nowrap}
+
+/* Cardápio */
+.colunas{position:relative;flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(3*var(--u));margin-top:calc(.6*var(--u))}
+.coluna{display:flex;flex-direction:column;justify-content:space-between;gap:calc(.5*var(--u));min-width:0}
+.tempo h2{margin:0 0 .08em;padding-bottom:.12em;font-weight:400;font-family:var(--letreiro);font-size:var(--cabec);line-height:1.08;color:var(--rosa);display:flex;align-items:center;gap:.3em;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 8' preserveAspectRatio='none'%3E%3Cpath d='M1 4C40 1 60 7 110 4S190 2 240 5S340 6 399 3' fill='none' stroke='%23f4a9a0' stroke-opacity='.62' stroke-width='2' vector-effect='non-scaling-stroke' stroke-linecap='round'/%3E%3C/svg%3E") 0 100%/100% 6px no-repeat}
+.rabisco{width:1.28em;height:1.28em;flex:none;fill:none;stroke:var(--giz);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.lista{list-style:none;margin:0;padding:0}
+@media (min-width:1100px){
+  .tempo:only-child{flex:1;display:flex;flex-direction:column}
+  .tempo:only-child .lista{flex:1;display:flex;flex-direction:column;justify-content:space-between}
+}
+@media (min-width:1100px) and (max-height:800px){
+  :root{--cabec:max(21px,calc(1.85*var(--u)))}
+  .conta strong{display:none}
+  .lampada{--lamp:calc(2.9*var(--u));--cabo:calc(1.9*var(--u))}
+  .titulo svg{height:calc(5.7*var(--u))}
+  .sub{margin-top:0}
+  .colunas{margin-top:calc(.25*var(--u))}
+  html .prato[data-estado="atual"]{margin:calc(.75*var(--u)) 0 calc(.3*var(--u))}
+}
+.prato{position:relative}
+.prato-bt{position:relative;display:block;width:100%;min-height:44px;margin:0;padding:calc(.13*var(--u)) calc(.35*var(--u));text-align:left;background:none;border:0;color:inherit;font:inherit;cursor:var(--garfo);border-radius:14px 10px 16px 8px/10px 14px 8px 16px;-webkit-tap-highlight-color:transparent;transition:background-color .12s}
+.prato-bt:hover,.prato-bt.pedido{background-color:rgba(255,248,225,.075)}
+.prato-bt:hover .nome{color:#fff}
+.prato-bt:active{background-color:rgba(255,248,225,.13)}
+.linha-nome{display:flex;align-items:baseline;gap:.34em}
+.num{flex:none;min-width:calc(var(--gut) - .34em);font-size:calc(var(--nome)*.74);color:#c9c6b9}
+.nome{font-family:var(--k-titulo);font-size:var(--nome);line-height:1.08;color:var(--giz)}
+.pontos{flex:1 1 0;min-width:0;height:4px;color:#d8d5c8;background:radial-gradient(circle,currentColor 1.05px,transparent 1.45px) 0 50%/8px 100% repeat-x;opacity:.55}
+.preco{flex:none;font-size:var(--preco);white-space:nowrap;color:#dcd8ca}
+.desc{display:block;padding-left:var(--gut);font-size:var(--desc);line-height:1.13;color:#e4e0d3}
+.linha-d{display:block;width:fit-content}
+.prato[data-estado="feito"] .nome{color:#cfcbbd}
+.prato[data-estado="feito"] .desc{color:#bdbbae}
+.prato[data-estado="feito"] .num{visibility:hidden}
+.prato[data-estado="atual"]{margin:calc(.95*var(--u)) 0 calc(.5*var(--u))}
+.prato[data-estado="atual"] .nome{color:var(--amarelo)}
+.plaquinha{position:absolute;z-index:4;right:calc(.4*var(--u));top:-1.02em;padding:.08em .62em .12em;font-family:var(--k-titulo);font-size:max(16px,calc(1.2*var(--u)));line-height:1.2;color:#2a1b0e;background:linear-gradient(#d9ac72,#b98a50);border-radius:3px;box-shadow:0 2px 0 #7a5530,0 3px 7px rgba(0,0,0,.45);transform:rotate(2.6deg);transform-origin:50% -6px}
+.plaquinha::before,.plaquinha::after{content:"";position:absolute;top:-7px;width:1.5px;height:9px;background:#e8dcc0}
+.plaquinha::before{left:18%;transform:rotate(16deg)}
+.plaquinha::after{right:18%;transform:rotate(-16deg)}
+html.balancar .plaquinha{animation:plaquinha 1.3s ease-out both}
+@keyframes plaquinha{0%{transform:rotate(-14deg) translateY(-6px);opacity:0}18%{opacity:1}35%{transform:rotate(9deg)}58%{transform:rotate(-3deg)}80%{transform:rotate(4deg)}100%{transform:rotate(2.6deg)}}
+
+/* Prato com vapor e conta */
+.rodape-col{display:flex;align-items:flex-end;gap:calc(1.2*var(--u));margin-top:auto}
+.cena{position:relative;flex:none;width:calc(10.8*var(--u));height:calc(7.3*var(--u))}
+.cena svg.prato-svg{position:absolute;left:0;bottom:0;width:100%;fill:none;stroke:var(--giz);stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+.vapor{position:absolute;left:var(--x);bottom:44%;width:calc(1.3*var(--u));height:calc(3.9*var(--u));animation:subir 3.5s ease-in-out infinite var(--a,0s);opacity:0;will-change:transform,opacity}
+.vapor svg{display:block;width:100%;height:100%;fill:none;stroke:var(--azul);stroke-width:2.2;stroke-linecap:round}
+@keyframes subir{0%{transform:translateY(12px) scaleY(.82);opacity:0}28%{opacity:.9}70%{opacity:.45}100%{transform:translateY(-12px) scaleY(1.08);opacity:0}}
+.conta{position:relative;z-index:4;flex:1;min-width:0;margin:0 0 calc(.55*var(--u));padding:.45em .75em .5em;font-size:max(15.5px,calc(1.16*var(--u)));line-height:1.16;color:var(--k-painel-texto);background:var(--k-painel-fundo);transform:rotate(-1.4deg);box-shadow:0 5px 12px rgba(0,0,0,.5)}
+.conta::after{content:"";position:absolute;left:0;right:0;top:calc(100% - .5px);height:7px;background:conic-gradient(from -45deg at 50% 100%,var(--k-painel-fundo) 90deg,transparent 0) 0 0/14px 7px repeat-x}
+.conta strong{display:block;font-family:var(--k-titulo);font-weight:400;font-size:1.24em;line-height:1.05}
+.conta p{margin:0}
+html.balancar .conta{animation:pousar .34s cubic-bezier(.3,.8,.25,1) both}
+@keyframes pousar{from{transform:translateY(-14px) rotate(3deg);opacity:0}to{transform:rotate(-1.4deg);opacity:1}}
+
+/* Lâmpadas e plantas */
+.lampada{position:absolute;top:var(--k-topo-h);z-index:5;width:var(--lamp,calc(3.5*var(--u)));transform-origin:50% 0;pointer-events:none;animation:balanco 6.6s ease-in-out infinite alternate;will-change:transform}
+.lampada.a{left:15.2%}
+.lampada.b{left:82%;animation-duration:7.5s;animation-delay:-2.4s}
+.cabo{width:2px;height:var(--cabo,calc(2.7*var(--u)));margin:0 auto;background:#17100b}
+.bulbo{display:block;width:100%;overflow:visible}
+.halo{position:absolute;left:50%;top:calc(var(--cabo,calc(2.7*var(--u))) + 3.4*var(--u));width:76vw;height:76vw;margin:-38vw 0 0 -38vw;border-radius:50%;background:radial-gradient(closest-side,rgba(255,226,170,.5),rgba(255,206,135,.2) 11%,rgba(255,190,110,.09) 42%,rgba(255,190,110,0));transition:opacity .5s}
+html[data-leitura="noite"] .halo{background:radial-gradient(closest-side,rgba(255,226,170,.62),rgba(255,206,135,.3) 11%,rgba(255,190,110,.14) 42%,rgba(255,190,110,0))}
+@keyframes balanco{from{transform:rotate(-1.7deg)}to{transform:rotate(1.7deg)}}
+.planta{position:absolute;z-index:4;pointer-events:none;overflow:visible}
+.samambaia{left:calc(-1.4*var(--u));top:calc(var(--k-topo-h) - 2px);width:calc(17*var(--u));transform-origin:30% 0;animation:brisa 8s ease-in-out infinite alternate;will-change:transform}
+.jiboia{right:calc(-.2*var(--u));top:calc(var(--k-topo-h) - 2px);width:calc(6.2*var(--u));transform-origin:60% 0;animation:brisa 9.5s ease-in-out infinite alternate-reverse;will-change:transform}
+.espada{left:calc(-.8*var(--u));bottom:calc(.7*var(--u));width:calc(6.4*var(--u))}
+@keyframes brisa{from{transform:rotate(-.7deg)}to{transform:rotate(.7deg)}}
+
+/* Abertura */
+.apagao{position:absolute;inset:0;z-index:6;background:#070504;pointer-events:none;opacity:0}
+html.intro .apagao{opacity:.8}
+html.intro.escrevendo .apagao{animation:acender .6s ease-out both}
+@keyframes acender{0%{opacity:.8}30%{opacity:.3}44%{opacity:.52}100%{opacity:0}}
+html.intro .escreve,html.intro .fisico,html.intro .marcas,html.intro .desc,html.intro #titulo{visibility:hidden}
+html.intro.escrevendo #titulo{visibility:visible}
+html.escrevendo .escreve{visibility:visible;-webkit-mask:var(--risco) 100% 0/235% 100% no-repeat;mask:var(--risco) 100% 0/235% 100% no-repeat;animation:escrever var(--dur,260ms) linear var(--d,0ms) both}
+html.escrevendo .escreve.ja{-webkit-mask:none;mask:none;animation:none}
+@keyframes escrever{from{-webkit-mask-position:100% 0;mask-position:100% 0}to{-webkit-mask-position:0 0;mask-position:0 0}}
+html.marcando .marcas,html.marcando .fisico{visibility:visible}
+.tr-marca{stroke-dasharray:1 1.02;stroke-dashoffset:1;animation:tracar var(--dur,180ms) ease-out var(--d,0ms) forwards}
+@keyframes tracar{to{stroke-dashoffset:0}}
+#po{position:fixed;inset:0;z-index:7;width:100%;height:100%;pointer-events:none}
+.bastao{position:fixed;left:0;top:0;z-index:8;width:calc(3.4*var(--u));min-width:32px;height:9px;border-radius:2px;background:linear-gradient(#fff,#d5d0c0);box-shadow:0 2px 3px rgba(0,0,0,.45);transform-origin:0 50%;pointer-events:none;will-change:transform}
+.pular{display:none;position:fixed;z-index:9;right:14px;top:calc(var(--k-topo-h) + 10px);min-width:64px;min-height:44px;padding:0 14px;font-family:var(--k-titulo);font-size:20px;color:var(--giz);background:rgba(10,12,12,.72);border:2px solid rgba(246,242,231,.55);border-radius:22px 14px 24px 12px/14px 22px 12px 24px;cursor:pointer}
+html.intro .pular{display:block}
+
+/* Chef */
+.chef{position:fixed;z-index:58;right:calc(4vw + 1.5*var(--u));bottom:calc(3.3*var(--u) + 14px);height:clamp(230px,40vh,360px);aspect-ratio:322/300;pointer-events:none;visibility:hidden;opacity:0;transform:translateY(12px);transition:transform .32s cubic-bezier(.3,.8,.25,1),opacity .18s}
+.chef::before{content:"";position:absolute;inset:4% 7% 2% 1%;border-radius:50% 44% 26% 26%/42% 42% 14% 14%;background:rgb(21,28,26);box-shadow:0 0 26px 18px rgb(21,28,26)}
+.chef svg{position:relative;display:block;width:100%;height:100%;overflow:visible;fill:none;stroke:var(--giz);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.chef .tampa path,.chef .tampa circle,.chef .fundo{fill:var(--lousa)}
+.chef .rosa{stroke:var(--rosa)}
+.chef .amarelo{stroke:var(--amarelo)}
+.chef text{font-family:var(--k-titulo);font-size:26px;fill:var(--amarelo);stroke:none}
+.chef .piscada{display:none}
+.chef.levantou .piscada{display:inline}
+.chef.levantou .olho-d{display:none}
+.chef.na-cena{visibility:visible;opacity:1;transform:none}
+.chef.na-cena.tracando .tr{stroke-dasharray:1 1.02;stroke-dashoffset:1;animation:tracar .3s ease-out both}
+.chef.saindo{opacity:0;transform:translateY(16px)}
+.chef .vap path{stroke:var(--azul);stroke-width:2.6;opacity:0}
+.chef.levantou .vap path{animation:vapor-chef 1.5s ease-out infinite}
+.chef.levantou .vap path:nth-child(2){animation-delay:.22s}
+.chef.levantou .vap path:nth-child(3){animation-delay:.44s}
+@keyframes vapor-chef{0%{transform:translateY(8px);opacity:0}30%{opacity:.95}100%{transform:translateY(-7px);opacity:0}}
+.chef.servindo{transform:translateX(calc(4vw + 1.5*var(--u) - 472px))}
+
+/* Comanda */
+.k-painel{font-family:var(--mao);font-size:19px;background:var(--k-painel-fundo);box-shadow:-12px 0 36px rgba(0,0,0,.5)}
+.k-painel::before{content:"";position:absolute;top:0;bottom:0;left:-10px;width:10.5px;background:conic-gradient(from 45deg at 0 50%,var(--k-painel-fundo) 90deg,transparent 0) 0 0/10.5px 20px repeat-y}
+.k-painel[data-carimbo]::after{content:attr(data-carimbo);position:absolute;top:13px;right:22px;padding:1px 9px 2px;font-family:var(--k-titulo);font-size:19px;line-height:1.2;color:#b3321f;border:2.5px solid #b3321f;border-radius:5px;transform:rotate(-4deg);opacity:.86;pointer-events:none}
+.cab-comanda{display:flex;align-items:center;gap:.5em;margin:0;padding:14px 22px 6px 26px;font-size:18px;color:#3c4d86;border-bottom:1.5px dashed var(--k-linha)}
+.k-painel header{padding:12px 16px 6px 26px}
+.k-painel h2{font-size:36px;font-weight:400;line-height:1.05}
+.k-painel p{padding:0 22px 12px 26px;font-size:20px;line-height:1.25;opacity:1}
+.k-aulas{padding:0 14px 84px;background:linear-gradient(90deg,transparent 62px,#e9a8a0 62px 63.5px,transparent 63.5px)}
+.k-aulas button{align-items:baseline;gap:14px;min-height:48px;padding:10px 8px;font-size:21px;line-height:1.2}
+.k-aulas .id{flex:0 0 38px;padding:0;font-size:17px;opacity:1;color:#a43a2a}
+.k-painel :focus-visible,.k-aula :focus-visible{outline-color:#a8441f}
+html[data-leitura="noite"] .k-aula :focus-visible,.k-aula-barra :focus-visible{outline-color:var(--k-acento)}
+html[data-leitura="noite"]{--k-painel-fundo:#ebe0c5}
+.k-aula-barra strong{font-size:23px;font-weight:400}
+.k-aula h1,.k-aula h2,.k-caixa h3{font-weight:400}
+.k-caixa h3{font-size:25px}
+
+/* Telas menores */
+@media (max-width:1099.98px){
+  .sala{padding:calc(var(--k-topo-h) + 12px) 8px 92px}
+  .quadro{--moldura:8px}
+  .lousa{padding:48px 12px 22px}
+  .cabeca{padding-top:6px}
+  .titulo svg{width:min(100%,560px);height:auto}
+  .sub{flex-direction:column;gap:12px;margin-top:6px}
+  .frase{font-size:clamp(22px,5.9vw,26px);max-width:21em}
+  .continuar{width:100%;max-width:440px;min-height:64px;padding:8px 14px;font-size:clamp(22px,6.2vw,27px);line-height:1.08}
+  .continuar span{display:block}
+  .colunas{display:flex;flex-direction:column;gap:22px;margin-top:24px}
+  .coluna,.rodape-col{display:contents}
+  .tempo h2{margin-bottom:.22em}
+  .prato{margin-bottom:9px}
+  .prato-bt{padding:4px 4px}
+  .prato[data-estado="atual"]{margin:30px 0 14px}
+  .plaquinha{right:6px;top:-22px;font-size:18px}
+  .cena{align-self:center;width:210px;height:150px}
+  .vapor{width:24px;height:70px}
+  .conta{order:9;flex:none;align-self:flex-end;width:min(76%,290px);margin:6px 2px 14px;font-size:19px}
+  .chao{height:82px}
+  .lampada{width:32px;--cabo:16px}
+  .lampada.a{display:none}
+  .lampada.b{left:70%}
+  .halo{width:150vw;height:150vw;margin:-75vw 0 0 -75vw;top:44px}
+  .samambaia{left:-16px;width:112px}
+  .jiboia{right:-5px;width:37px}
+  .espada{left:-4px;bottom:20px;width:64px}
+  .aparador{left:-6px;right:-6px;bottom:-12px;height:11px}
+  .gizes{right:5%}
+  .gizes i{width:26px;height:6px}
+  .gizes i:nth-child(2){width:15px}
+  .gizes i:nth-child(3){width:20px}
+  .gizes b{width:40px;height:11px}
+  }
+@media (max-width:980px){
+  .pular{top:auto;bottom:calc(72px + env(safe-area-inset-bottom));right:12px}
+  .chef{right:2px;bottom:62px;height:min(204px,27vh)}
+  .chef.servindo{transform:translateY(calc(-78vh + 92px))}
+  .k-painel{border-radius:0;box-shadow:0 -12px 36px rgba(0,0,0,.5)}
+  .k-painel::before{left:0;right:0;top:-10px;bottom:auto;width:auto;height:10.5px;background:conic-gradient(from 135deg at 50% 0,var(--k-painel-fundo) 90deg,transparent 0) 0 0/20px 10.5px repeat-x}
+}
+@media (min-width:700px) and (max-width:1099.98px){
+  :root{--nome:27px;--desc:19px}
+  .sala{padding-left:3vw;padding-right:3vw}
+  .colunas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 30px;align-items:start}
+  .coluna{display:flex;gap:18px;justify-content:flex-start}
+  .coluna:nth-child(3){grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 30px;align-items:start}
+  .coluna:nth-child(3) .tempo:first-child{grid-row:1/span 2}
+  .rodape-col{display:flex;align-items:flex-end;gap:14px}
+  .conta{flex:1;width:auto;margin:0 0 12px}
+  .cena{width:150px;height:110px}
+}
+@media (max-height:520px) and (max-width:1099.98px){.chef.servindo{opacity:0}}
+html.parado *,html.parado *::before,html.parado *::after,.fora,.fora *{animation-play-state:paused!important}
+@media (prefers-reduced-motion:reduce){
+  .lampada,.samambaia,.jiboia{animation:none;will-change:auto}
+  .vapor{animation:none;opacity:.7;will-change:auto}
+  .chef,.chef::before,.continuar,.noite-veu,.halo{transition:none}
+  .chef .vap path,.chef.levantou .vap path{animation:none;opacity:.8}
+  .apagao,.pular,.bastao,#po{display:none!important}
+  .continuar:hover{transform:none}
+}
+</style>
+</head>
+<body>
+<button class="pular" id="pular" type="button" aria-label="Pular a animação de abertura">Pular</button>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="d-cesta" viewBox="0 0 48 48"><path d="M5 27C7 38 14 44 24 44C34 44 41 38 43 27ZM12 33L15 41M20 33L21 43M28 33L27 43M36 33L33 41M9 26C7 16 20 14 21 26M20 26C20 11 34 12 33 26M32 26C33 17 43 18 40 27"/></symbol>
+  <symbol id="d-coxinha" viewBox="0 0 48 48"><path d="M24 3C25 11 30 14 33 19C29 21 30 26 34 25C33 29 38 30 40 28C42 34 41 40 36 43C29 46 17 46 11 43C5 40 5 32 9 26C13 19 22 13 24 3ZM16 32L19 33M24 37L27 36M15 39L17 40M22 26L25 25M29 33L31 34"/></symbol>
+  <symbol id="d-panela" viewBox="0 0 48 48"><path d="M8 25H40L38 43C38 44 37 45 36 45H12C11 45 10 44 10 43ZM8 29H3M40 29H45M7 23C10 15 38 15 41 23ZM21 16C21 12 27 12 27 16M15 10C13 8 17 6 15 3M33 10C31 8 35 6 33 3"/></symbol>
+  <symbol id="d-estrela" viewBox="0 0 48 48"><path d="M24 4L29 18L44 18.5L32 27.5L36.5 42.5L24 33.5L11.5 42.5L16 27.5L4 18.5L19 18Z"/></symbol>
+  <symbol id="d-chopp" viewBox="0 0 64 48"><g transform="rotate(9 15 28)"><path d="M6 15L9 44H23L26 15M5 15C3 8 12 7 15 11C19 7 28 8 27 15"/></g><g transform="translate(64 0) scale(-1 1) rotate(9 15 28)"><path d="M6 15L9 44H23L26 15M5 15C3 8 12 7 15 11C19 7 28 8 27 15"/></g><path d="M32 1V6M26 2L28 6M38 2L36 6"/></symbol>
+  <symbol id="d-pudim" viewBox="0 0 48 48"><path d="M16 12C16 8 32 8 32 12C32 16 16 16 16 12ZM21 12C21 10.6 27 10.6 27 12C27 13.4 21 13.4 21 12ZM16 12L10 33C10 38 38 38 38 33L32 12M14.5 22C14 27 18 27 18.5 23C19 29 24 29 24.5 24C25 29 30 28 30.5 24C31 27 34 26 33.5 22M3 38C8 45 40 45 45 38"/></symbol>
+</svg>
+
+<div class="sala" id="sala">
+  <div class="noite-veu"></div>
+  <svg class="planta samambaia" id="samambaia" viewBox="0 0 300 430" aria-hidden="true" focusable="false"></svg>
+  <svg class="planta jiboia" id="jiboia" viewBox="0 0 110 470" aria-hidden="true" focusable="false"></svg>
+  <svg class="planta espada" id="espada" viewBox="0 0 110 340" aria-hidden="true" focusable="false"></svg>
+  <div class="chao"></div>
+  <main class="quadro" id="quadro">
+    <div class="lousa" id="lousa">
+      <header class="cabeca">
+        <h1 class="titulo"><span class="so-leitor">Do zero ao agente</span><svg id="titulo" aria-hidden="true" focusable="false"></svg></h1>
+        <div class="sub">
+          <p class="frase escreve">Menu de degustação em 18 pratos. Escolha um e veja a receita.</p>
+          <button class="continuar escreve" id="continuar" type="button"><span>Continuar o prato:</span> <span>Git e GitHub, do zero</span></button>
+        </div>
+      </header>
+      <div class="colunas" id="colunas"></div>
+      <svg class="marcas" id="marcas" aria-hidden="true" focusable="false"></svg>
+      <div class="grao"></div>
+    </div>
+    <div class="aparador" aria-hidden="true"><div class="gizes"><i></i><i></i><i></i><b></b></div></div>
+  </main>
+  <div class="lampada a" aria-hidden="true"><div class="halo"></div><div class="cabo"></div><svg class="bulbo" viewBox="0 0 60 92"><use href="#bulbo-d"/></svg></div>
+  <div class="lampada b" aria-hidden="true"><div class="halo"></div><div class="cabo"></div><svg class="bulbo" viewBox="0 0 60 92"><defs><radialGradient id="vidro" cx=".5" cy=".62" r=".62"><stop offset="0" stop-color="#fff8dc"/><stop offset=".46" stop-color="#ffd27a"/><stop offset="1" stop-color="#e68f2c" stop-opacity=".88"/></radialGradient></defs><g id="bulbo-d"><rect x="21" width="18" height="22" rx="3" fill="#7d5a2b"/><path d="M21 7H39M21 14H39" stroke="#553a1a" stroke-width="2"/><path d="M22 22C22 30 9 38 9 56C9 74 19 90 30 90C41 90 51 74 51 56C51 38 38 30 38 22Z" fill="url(#vidro)" stroke="#ffe7b0" stroke-opacity=".65"/><path d="M25 26V50L27.5 45L30 50L32.5 45L35 50V26" fill="none" stroke="#fffbe8" stroke-width="1.6"/></g></svg></div>
+  <div class="apagao"></div>
+</div>
+
+<div class="chef" id="chef" aria-hidden="true">
+  <svg viewBox="-92 0 322 300" focusable="false">
+    <path class="tr" pathLength="1" d="M84 156C62 162 48 180 44 226C42 250 45 272 54 286M136 156C158 162 172 180 176 226C178 250 175 272 166 286"/>
+    <path class="tr" pathLength="1" d="M54 286C86 295 134 295 166 286"/>
+    <path d="M96 258h.01M124 258h.01M96 277h.01M124 277h.01" stroke-width="6"/>
+    <path class="tr rosa" pathLength="1" d="M86 152C96 163 124 163 134 152M101 160L110 178L119 160"/>
+    <path class="tr" pathLength="1" d="M78 64C56 68 42 48 57 35C52 17 79 7 91 21C99 5 130 5 136 23C152 13 173 29 161 46C174 58 163 70 142 64"/>
+    <path class="tr" pathLength="1" d="M76 60L75 84C92 92 128 92 145 84L144 60M94 44L96 62M111 38V62M128 44L126 62"/>
+    <path class="tr" pathLength="1" d="M77 88C71 122 84 150 110 150C136 150 149 122 143 88"/>
+    <path d="M96 106h.01" stroke-width="7"/>
+    <path class="olho-d" d="M124 106h.01" stroke-width="7"/>
+    <path class="piscada" d="M117 107Q124 100 131 107" stroke-width="3.4"/>
+    <path class="tr" pathLength="1" d="M87 96Q95 90 104 95M116 95Q125 90 133 96"/>
+    <path class="tr" pathLength="1" d="M110 106C104 116 106 121 113 120"/>
+    <path class="tr" pathLength="1" d="M110 125C100 116 89 118 83 124C79 128 72 127 70 119M110 125C120 116 131 118 137 124C141 128 148 127 150 119M110 127C101 134 91 134 83 130M110 127C119 134 129 134 137 130"/>
+    <path class="tr" pathLength="1" d="M101 139Q110 146 119 139"/>
+    <path class="rosa" d="M81 112q5 -3 9 0M130 112q5 -3 9 0"/>
+    <path class="tr" pathLength="1" d="M150 170C176 186 198 212 186 240C182 248 170 248 164 243"/>
+    <path class="tr fundo" pathLength="1" d="M26 240C52 250 168 250 194 240C168 232 52 232 26 240Z"/>
+    <path class="tr" pathLength="1" d="M56 236C78 244 142 244 164 236C142 230 78 230 56 236Z"/>
+    <path class="tr" pathLength="1" d="M80 234C80 205 140 205 140 234"/>
+    <text id="chef-n" x="110" y="232" text-anchor="middle">3</text>
+    <g class="vap"><path d="M92 208C87 200 97 194 92 186C87 178 97 172 92 166"/><path d="M110 204C105 196 115 190 110 182C105 174 115 168 110 162"/><path d="M128 208C123 200 133 194 128 186C123 178 133 172 128 166"/></g>
+    <path class="tr" id="braco" pathLength="1" d="M74 162Q26 205 110 170"/>
+    <g class="tampa" id="tampa">
+      <path class="tr" pathLength="1" d="M48 236C48 194 78 178 110 178C142 178 172 194 172 236Z"/>
+      <path style="fill:none" class="tr" pathLength="1" d="M66 219C70 205 80 196 94 191"/>
+      <circle cx="110" cy="171" r="7"/>
+    </g>
+    <circle class="fundo" id="mao" cx="110" cy="170" r="8.5"/>
+  </svg>
+</div>
+
+<script src="dados.js"></script>
+<script src="kit.js"></script>
+<script>
+Kit.iniciar({ id: '8-cardapio' });
+(function () {
+  const raiz = document.documentElement;
+  const REDUZ = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = (s, e = document) => e.querySelector(s);
+  const $$ = (s, e = document) => [...e.querySelectorAll(s)];
+  const NS = 'http://www.w3.org/2000/svg';
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const rng = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const tela = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+  const f1 = n => n.toFixed(1);
+  const lim = p => Math.max(0, Math.min(1, p));
+  const lerp = (a, b, p) => a + (b - a) * p;
+
+  /* Texturas pintadas uma vez só: parede, lousa e o grão que falha o giz */
+  function texturaTijolos() {
+    const L = 128, A = 44, C = 8, F = 8, W = L * C, H = A * F, c = tela(W, H), g = c.getContext('2d');
+    g.fillStyle = '#54402f'; g.fillRect(0, 0, W, H);
+    const r0 = rng(9);
+    for (let i = 0; i < 500; i++) { g.fillStyle = r0() < .5 ? 'rgba(25,15,8,.08)' : 'rgba(190,170,140,.07)'; g.fillRect(r0() * W, r0() * H, 1 + r0() * 3, 1 + r0() * 3); }
+    const cores = ['#a6553a', '#9b4c34', '#8d452f', '#b1623f', '#7f3d2a', '#b96f4b', '#944a35', '#a95a36', '#874030'];
+    const tijolo = (px, py, sem) => {
+      const r = rng(sem), w = L - 7, h = A - 7;
+      g.fillStyle = cores[Math.floor(r() * cores.length)];
+      g.beginPath(); g.moveTo(px + 3, py); g.lineTo(px + w - 2, py + r() * 2); g.lineTo(px + w, py + h - 2); g.lineTo(px + 2, py + h); g.closePath(); g.fill();
+      g.fillStyle = 'rgba(255,225,190,.13)'; g.fillRect(px + 3, py + 1, w - 6, 3);
+      g.fillStyle = 'rgba(0,0,0,.24)'; g.fillRect(px + 3, py + h - 4, w - 5, 4);
+      for (let i = 0; i < 26; i++) { g.fillStyle = r() < .6 ? 'rgba(30,12,5,.13)' : 'rgba(255,215,180,.1)'; g.fillRect(px + 2 + r() * (w - 6), py + 2 + r() * (h - 5), 1 + r() * 4, 1 + r() * 2); }
+    };
+    for (let y = 0; y < F; y++) for (let x = 0; x < C; x++) {
+      const ox = x * L + (y % 2 ? L / 2 : 0), sem = 500 + y * 40 + x;
+      tijolo(ox + 3, y * A + 3, sem);
+      if (ox + L > W) tijolo(ox + 3 - W, y * A + 3, sem);
+    }
+    return c;
+  }
+  function ruido(w, h, cor, dens, aMin, aMax, sem) {
+    const c = tela(w, h), g = c.getContext('2d'), im = g.createImageData(w, h), d = im.data, r = rng(sem);
+    for (let i = 0; i < d.length; i += 4) if (r() < dens) { d[i] = cor[0]; d[i + 1] = cor[1]; d[i + 2] = cor[2]; d[i + 3] = (aMin + r() * (aMax - aMin)) * 255; }
+    g.putImageData(im, 0, 0);
+    return c;
+  }
+  function texturaLousa() {
+    const S = 640, c = tela(S, S), g = c.getContext('2d'), r = rng(21);
+    g.fillStyle = '#1e2725'; g.fillRect(0, 0, S, S);
+    g.lineCap = 'round';
+    for (let i = 0; i < 40; i++) {
+      const x = r() * S, y = r() * S, rad = 80 + r() * 220, a0 = r() * 6.3, len = .5 + r() * 1.3, w = 16 + r() * 50;
+      g.strokeStyle = `rgba(226,236,226,${(.008 + r() * .017).toFixed(3)})`; g.lineWidth = w;
+      const m = rad + w;
+      for (const dx of [-S, 0, S]) for (const dy of [-S, 0, S]) {
+        const X = x + dx, Y = y + dy;
+        if (X + m < 0 || X - m > S || Y + m < 0 || Y - m > S) continue;
+        g.beginPath(); g.arc(X, Y, rad, a0, a0 + len); g.stroke();
+      }
+    }
+    for (let i = 0; i < 120; i++) {
+      const x = r() * S, y = r() * S, l = 30 + r() * 140, a = -.25 + r() * .5;
+      g.strokeStyle = `rgba(240,245,235,${(.012 + r() * .03).toFixed(3)})`; g.lineWidth = .6 + r() * 1.2;
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke();
+    }
+    g.fillStyle = g.createPattern(ruido(128, 128, [255, 255, 255], .3, .01, .05, 8), 'repeat'); g.fillRect(0, 0, S, S);
+    return c;
+  }
+  function texturaGrao() {
+    const k = devicePixelRatio > 1.4 ? 2 : 1, S = 256 * k, c = ruido(S, S, [30, 39, 37], .085, .12, .72, 5), g = c.getContext('2d'), r = rng(6);
+    g.lineWidth = .7 * k; g.lineCap = 'round';
+    for (let i = 0; i < 110; i++) {
+      const x = r() * S, y = r() * S, l = (7 + r() * 26) * k, a = -.3 + r() * .25;
+      g.strokeStyle = `rgba(30,39,37,${(.14 + r() * .28).toFixed(2)})`;
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke();
+    }
+    return c;
+  }
+  const textura = (nome, c, tipo, q) => c.toBlob(b => { if (b) raiz.style.setProperty(nome, `url(${URL.createObjectURL(b)})`); }, tipo, q);
+  function texturaMadeira() {
+    const W = 600, H = 60, c = tela(W, H), g = c.getContext('2d'), r = rng(14);
+    g.lineCap = 'round';
+    for (let i = 0; i < 46; i++) {
+      const y = r() * H, a = .05 + r() * .17, amp = 1 + r() * 4;
+      g.strokeStyle = r() < .35 ? `rgba(255,220,170,${(a * .55).toFixed(3)})` : `rgba(20,8,0,${a.toFixed(3)})`;
+      g.lineWidth = .5 + r() * 1.4;
+      g.beginPath(); g.moveTo(-10, y); g.bezierCurveTo(W * .33, y - amp, W * .66, y + amp, W + 10, y); g.stroke();
+    }
+    return c;
+  }
+  textura('--madeira', texturaMadeira(), 'image/png');
+  textura('--tijolos', texturaTijolos(), 'image/jpeg', .84);
+  textura('--lousa-tx', texturaLousa(), 'image/jpeg', .82);
+  textura('--grao', texturaGrao(), 'image/png');
+
+  /* Plantas */
+  (function plantas() {
+    const r = rng(11), verdes = ['#2e6a3d', '#38794a', '#458c55', '#2a5f37', '#55a063', '#6bb070'];
+    const cx = 112, cy = 62; let s = '';
+    s += '<path d="M84 58L112 -6L140 58M98 58L112 -6L126 58" fill="none" stroke="#d8c8a4" stroke-width="1.5"/>';
+    for (let i = 0; i < 22; i++) {
+      const a = i / 21, ex = cx + (a * 2 - 1) * (118 + r() * 32) + 8, ey = cy + lerp(345, 118, Math.pow(a, .8)) + r() * 34;
+      const c1x = cx + (ex - cx) * .72, c1y = cy - 44 - r() * 38;
+      let d = `M${cx} ${cy}Q${f1(c1x)} ${f1(c1y)} ${f1(ex)} ${f1(ey)}`;
+      for (let t = .08; t < 1; t += .027) {
+        const u = 1 - t, px = u * u * cx + 2 * u * t * c1x + t * t * ex, py = u * u * cy + 2 * u * t * c1y + t * t * ey;
+        const tx = 2 * u * (c1x - cx) + 2 * t * (ex - c1x), ty = 2 * u * (c1y - cy) + 2 * t * (ey - c1y), l = Math.hypot(tx, ty);
+        const nx = -ty / l, ny = tx / l, ax = tx / l, ay = ty / l, L = 19 * Math.pow(Math.sin(Math.PI * Math.min(1, t * 1.02)), .6) * (1 - t * .32);
+        d += `M${f1(px)} ${f1(py)}Q${f1(px + nx * L * .7)} ${f1(py + ny * L * .7)} ${f1(px + nx * L + ax * L * .62)} ${f1(py + ny * L + ay * L * .62 + L * .16)}M${f1(px)} ${f1(py)}Q${f1(px - nx * L * .7)} ${f1(py - ny * L * .7)} ${f1(px - nx * L + ax * L * .62)} ${f1(py - ny * L + ay * L * .62 + L * .16)}`;
+      }
+      s += `<path d="${d}" fill="none" stroke="${verdes[Math.floor(r() * verdes.length)]}" stroke-width="${f1(1.25 + r() * .75)}" stroke-linecap="round"/>`;
+    }
+    s += '<path d="M78 58H146C146 84 130 98 112 98C94 98 78 84 78 58Z" fill="#a9583a"/><path d="M78 58H146L145 64H79Z" fill="#c26e4a"/>';
+    $('#samambaia').innerHTML = s;
+
+    const r2 = rng(33), folhas = ['#3c8a4b', '#4d9b58', '#2f7040', '#69b06a', '#3a7f49'];
+    let j = '';
+    [[62, 452, 0], [84, 300, 1], [38, 372, 2]].forEach(([x0, comp, k]) => {
+      let x = x0, y = 0, d = `M${x0} -4`, fl = '', lado = k % 2 ? 1 : -1;
+      while (y < comp) {
+        const py = y + 22 + r2() * 12, px = x0 + Math.sin(py * .022 + k * 2) * 8;
+        d += `Q${f1((x + px) / 2 + lado * 3)} ${f1((y + py) / 2)} ${f1(px)} ${f1(py)}`;
+        const esc = (.72 + r2() * .42) * (1 - py / comp * .22), ang = 180 - lado * (34 + r2() * 34);
+        fl += `<path transform="translate(${f1(px)} ${f1(py)}) rotate(${f1(ang)}) scale(${esc.toFixed(2)})" d="M0 0C-15 -6 -19 -23 -9 -28C-4 -30 -1 -26 0 -23C1 -26 4 -30 9 -28C19 -23 15 -6 0 0Z" fill="${folhas[Math.floor(r2() * folhas.length)]}"/>`;
+        x = px; y = py; lado = -lado;
+      }
+      j += `<path d="${d}" fill="none" stroke="#2c5a34" stroke-width="2"/>${fl}`;
+    });
+    $('#jiboia').innerHTML = j;
+
+    const r3 = rng(4); let e = '';
+    [[-15, 300, 15], [11, 236, 16], [-27, 214, 13], [24, 262, 14], [-6, 260, 17], [31, 186, 12], [-36, 158, 11]].forEach(([dx, alt, lg]) => {
+      const bx = 55 + dx * .34, ty = 262 - alt, tx = 55 + dx;
+      e += `<path d="M${f1(bx - lg * .6)} 268C${f1(bx - lg)} ${f1(262 - alt * .46)} ${f1(tx - lg * .5)} ${f1(262 - alt * .8)} ${f1(tx)} ${f1(ty)}C${f1(tx + lg * .5)} ${f1(262 - alt * .8)} ${f1(bx + lg)} ${f1(262 - alt * .46)} ${f1(bx + lg * .6)} 268Z" fill="${r3() < .5 ? '#2f6a3f' : '#27593a'}" stroke="#c4c566" stroke-width="1.6"/>`;
+    });
+    e += '<path d="M22 262H88L80 336H30Z" fill="#a9583a"/><path d="M17 254H93V270H17Z" fill="#c26e4a"/><path d="M22 270H88L87 278H23Z" fill="rgba(0,0,0,.18)"/>';
+    $('#espada').innerHTML = e;
+  })();
+
+  /* O cardápio */
+  const TEMPOS = [
+    { col: 0, t: 'Couvert', ic: 'd-cesta', m: [0, 1] },
+    { col: 0, t: 'Entradas', ic: 'd-coxinha', m: [2, 3, 4] },
+    { col: 1, t: 'Pratos principais', ic: 'd-panela', m: [5, 6, 7, 8, 9, 10, 11] },
+    { col: 2, t: 'Especialidades da casa', ic: 'd-estrela', m: [12, 13, 14] },
+    { col: 2, t: 'Para compartilhar', ic: 'd-chopp', m: [15, 16] },
+    { col: 2, t: 'Sobremesa', ic: 'd-pudim', m: [17] }
+  ];
+  const ROTULO = { feito: 'Prato já comido.', atual: 'Servindo agora.', futuro: '' };
+  const htmlPrato = n => {
+    const m = window.CURSO[n], est = Kit.estado(n), qt = m.aulas.length;
+    return `<li class="prato" data-estado="${est}"><button class="prato-bt" type="button" data-n="${n}"${est === 'atual' ? ' aria-current="step"' : ''} aria-label="Módulo ${n}: ${esc(m.t)}.${ROTULO[est] && ' ' + ROTULO[est]} ${qt} aulas. Abrir a comanda.">${est === 'atual' ? '<span class="plaquinha fisico">servindo agora</span>' : ''}<span class="linha-nome escreve"><span class="num">${n}</span><span class="nome">${esc(m.t)}</span><span class="pontos"></span><span class="preco">${qt} aulas</span></span><span class="desc">${esc(m.d)}</span></button></li>`;
+  };
+  const htmlTempo = t => `<section class="tempo"><h2 class="escreve"><svg class="rabisco" aria-hidden="true" focusable="false"><use href="#${t.ic}"/></svg>${esc(t.t)}</h2><ol class="lista" start="${t.m[0]}">${t.m.map(htmlPrato).join('')}</ol></section>`;
+  const feitos = window.CURSO.filter((_, n) => Kit.estado(n) === 'feito').length;
+  const htmlRodape = `<div class="rodape-col">
+    <div class="cena escreve" aria-hidden="true"><svg class="prato-svg" viewBox="0 0 190 100"><path d="M8 30V48C8 56 20 56 20 48V30M14 30V48M14 54V94"/><path d="M178 30C170 42 170 58 174 62H178V94"/><path d="M30 74C30 60 160 60 160 74C160 90 30 90 30 74Z"/><path d="M52 73C52 66 138 66 138 73C138 80 52 80 52 73Z"/><path d="M70 71C63 63 71 56 78 58C80 49 93 47 97 54C103 48 116 50 117 58C125 56 129 65 122 71"/><path d="M84 66h.01M96 63h.01M107 67h.01M90 72h.01M103 73h.01"/></svg><i class="vapor" style="--x:40%;--a:0s"><svg viewBox="0 0 20 70"><path d="M10 68C2 56 18 46 10 34C2 22 18 12 10 2"/></svg></i><i class="vapor" style="--x:49%;--a:-1.2s"><svg viewBox="0 0 20 70"><path d="M10 68C18 56 2 46 10 34C18 22 2 12 10 2"/></svg></i><i class="vapor" style="--x:58%;--a:-2.3s"><svg viewBox="0 0 20 70"><path d="M10 68C2 56 18 46 10 34C2 22 18 12 10 2"/></svg></i></div>
+    <aside class="conta fisico" aria-label="A conta"><strong>A conta</strong><p>${feitos} de ${window.CURSO.length} pratos comidos</p><p>Couvert incluso</p><p>Gorjeta: um commit</p></aside>
+  </div>`;
+  $('#colunas').innerHTML = [0, 1, 2].map(c => `<div class="coluna">${TEMPOS.filter(t => t.col === c).map(htmlTempo).join('')}${c === 0 ? htmlRodape : ''}</div>`).join('');
+
+  /* Título: cada letra é revelada por um rabisco de giz */
+  const svgT = $('#titulo');
+  let letras = [], vb = [0, 0, 100, 100], titDuas = null;
+  function montarTitulo(comMascara) {
+    const duas = innerWidth < 700;
+    titDuas = duas;
+    const linhas = duas ? ['Do zero', 'ao agente'] : ['Do zero ao agente'];
+    svgT.innerHTML = '';
+    const defs = document.createElementNS(NS, 'defs');
+    defs.innerHTML = '<filter id="bruma" x="-10%" y="-20%" width="120%" height="140%"><feGaussianBlur stdDeviation="2.6"/></filter>';
+    const brumaG = document.createElementNS(NS, 'g');
+    brumaG.setAttribute('filter', 'url(#bruma)'); brumaG.setAttribute('opacity', comMascara ? 0 : .3); brumaG.id = 'bruma-g';
+    const g = document.createElementNS(NS, 'g');
+    const textos = linhas.map((tx, i) => {
+      const t = document.createElementNS(NS, 'text');
+      t.setAttribute('x', 0); t.setAttribute('y', i * 98); t.setAttribute('text-anchor', 'middle'); t.textContent = tx;
+      g.append(t); brumaG.append(t.cloneNode(true));
+      return t;
+    });
+    svgT.append(defs, brumaG, g);
+    const b = g.getBBox();
+    vb = [b.x - 4, -78, b.width + 8, (linhas.length - 1) * 98 + 78 + 24];
+    svgT.setAttribute('viewBox', vb.join(' '));
+    svgT.style.aspectRatio = vb[2] + '/' + vb[3];
+    letras = [];
+    if (!comMascara) return;
+    const mask = document.createElementNS(NS, 'mask');
+    mask.id = 'masc-titulo'; mask.setAttribute('maskUnits', 'userSpaceOnUse');
+    [['x', vb[0] - 20], ['y', vb[1] - 20], ['width', vb[2] + 40], ['height', vb[3] + 40]].forEach(([k, v]) => mask.setAttribute(k, v));
+    textos.forEach((t, li) => {
+      const n = t.getNumberOfChars(), oy = li * 98;
+      for (let i = 0; i < n; i++) {
+        if (t.textContent[i] === ' ') continue;
+        const e = t.getExtentOfChar(i), x0 = e.x - 4, x1 = e.x + e.width + 4, y0 = oy - 84, y1 = oy + 30, pas = Math.max(3, Math.round((x1 - x0) / 15));
+        let d = `M${f1(x0)} ${y1}`;
+        for (let k = 0; k < pas; k++) d += `L${f1(x0 + (x1 - x0) * (k + .6) / pas + 9)} ${y0}L${f1(x0 + (x1 - x0) * (k + 1) / pas - 9)} ${y1}`;
+        const p = document.createElementNS(NS, 'path');
+        p.setAttribute('d', d); p.setAttribute('fill', 'none'); p.setAttribute('stroke', '#fff'); p.setAttribute('stroke-width', 25); p.setAttribute('stroke-linecap', 'round');
+        p.setAttribute('pathLength', 1); p.style.strokeDasharray = '1 1.02'; p.style.strokeDashoffset = 1;
+        mask.append(p);
+        letras.push({ el: p, len: p.getTotalLength(), ini: 0, dur: 0, p: 0 });
+      }
+    });
+    defs.append(mask);
+    g.setAttribute('mask', 'url(#masc-titulo)');
+  }
+
+  /* Riscos, vistos e o círculo são desenhados com o tamanho real de cada prato */
+  const lousa = $('#lousa'), marcas = $('#marcas');
+  function caminho(pts) { return 'M' + pts.map(p => f1(p[0]) + ' ' + f1(p[1])).join('L'); }
+  function desenharMarcas(animar, atraso = 0) {
+    const base = lousa.getBoundingClientRect(), ox = base.left, oy = base.top;
+    const add = [];
+    let d = atraso;
+    const traco = (pontos, cor, larg, op, dur) => {
+      const a = animar ? ` class="tr-marca" style="--d:${Math.round(d)}ms;--dur:${dur}ms"` : '';
+      add.push(`<path d="${caminho(pontos)}" pathLength="1" stroke="${cor}" stroke-width="${larg}" stroke-opacity="${op}"${a}/>`);
+    };
+    $$('.prato[data-estado="feito"]').forEach((p, i) => {
+      const r = rng(70 + i * 13);
+      const faixa = document.createRange(); faixa.selectNodeContents($('.nome', p));
+      const rets = [...faixa.getClientRects()];
+      rets.forEach(q => {
+        const x0 = q.left - ox - 5, x1 = q.right - ox + 7, y = q.top - oy + q.height * .55, sobe = -2 - r() * 3, pts = [];
+        for (let k = 0; k <= 10; k++) pts.push([lerp(x0, x1, k / 10), y + sobe * k / 10 + (r() - .5) * 1.8]);
+        traco(pts, '#f4a9a0', f1(Math.max(1.7, Math.min(2.2, q.height * .066))), .9, 110);
+      });
+      const cn = $('.num', p).getBoundingClientRect(), cx = cn.left - ox + cn.width * .42, cy = cn.top - oy + cn.height * .5, u = Math.min(cn.height * .42, 11);
+      d += 70;
+      traco([[cx - u * .95, cy + u * .05], [cx - u * .3, cy + u * .85], [cx + u * 1.15, cy - u * 1.05]], '#a6e3b5', 3.3, 1, 90);
+      d += 60;
+    });
+    const atual = $('.prato[data-estado="atual"] .prato-bt');
+    if (atual) {
+      const q = atual.getBoundingClientRect(), r = rng(3), cx = q.left - ox + q.width / 2, cy = q.top - oy + q.height / 2, folga = Math.max(3, Math.min(9, q.left - ox - 6, base.right - q.right - 6)), a = q.width / 2 + folga, b = q.height / 2 + 8;
+      const volta = (ini, giro, mult) => {
+        const pts = [], n = 92, ex = 2 / 4.2;
+        for (let k = 0; k <= n; k++) {
+          const t = ini + giro * k / n, ct = Math.cos(t), st = Math.sin(t);
+          const m = mult + .9 * Math.sin(t * 3 + 1.1) + (k / n) * 2.2;
+          pts.push([cx + (a + m) * Math.sign(ct) * Math.pow(Math.abs(ct), ex) + (r() - .5) * .7, cy + (b + m) * Math.sign(st) * Math.pow(Math.abs(st), ex) + (r() - .5) * .7]);
+        }
+        return pts;
+      };
+      d = atraso + 240;
+      traco(volta(-2.7, Math.PI * 2.1, -1.5), '#f7d669', 3.1, 1, 340);
+      add.push(`<path d="${caminho(volta(-2.5, Math.PI * 1.45, .6))}" pathLength="1" stroke="#f7d669" stroke-width="1.7" stroke-opacity=".55"${animar ? ` class="tr-marca" style="--d:${Math.round(d + 170)}ms;--dur:210ms"` : ''}/>`);
+    }
+    marcas.innerHTML = add.join('');
+  }
+
+  /* Poeira de giz durante a abertura */
+  const po = { c: null, g: null, parts: [] };
+  const soltarPo = (x, y, n) => { for (let i = 0; i < n; i++) po.parts.push({ x, y, vx: (Math.random() - .5) * .55, vy: Math.random() * .3, r: .7 + Math.random() * 1.5, v: 1, q: .018 + Math.random() * .03 }); };
+  function pintarPo() {
+    const g = po.g; g.clearRect(0, 0, po.c.width, po.c.height);
+    const prox = [];
+    for (const p of po.parts) {
+      p.vy += .022; p.x += p.vx; p.y += p.vy; p.v -= p.q;
+      if (p.v <= 0) continue;
+      g.globalAlpha = p.v * .82; g.fillRect(p.x, p.y, p.r, p.r);
+      prox.push(p);
+    }
+    po.parts = prox.length > 200 ? prox.slice(-200) : prox;
+  }
+
+  /* Abertura: 2,3 segundos de escrita, depois de as fontes chegarem */
+  let introAtiva = false, comecou = false;
+  const redesenhar = () => { montarTitulo(false); desenharMarcas(false); };
+  let concluir = () => {
+    if (!introAtiva) return;
+    introAtiva = false;
+    raiz.classList.remove('intro', 'escrevendo', 'marcando');
+    redesenhar();
+  };
+  const fontesProntas = new Promise(r => {
+    const espia = () => window.fontesPedidas ? window.fontesPedidas.then(r, r) : setTimeout(espia, 30);
+    espia();
+  });
+  const quebrarLinhas = el => {
+    const txt = el.textContent, pal = txt.split(' ');
+    el.dataset.txt = txt; el.textContent = '';
+    const sp = pal.map((w, i) => { const s = document.createElement('span'); s.textContent = w + (i < pal.length - 1 ? ' ' : ''); el.append(s); return s; });
+    const grupos = []; let topo = -1e4;
+    sp.forEach(s => { const t = s.offsetTop; if (Math.abs(t - topo) > 4) { grupos.push(''); topo = t; } grupos[grupos.length - 1] += s.textContent; });
+    el.innerHTML = grupos.map(g => `<span class="linha-d escreve">${esc(g)}</span>`).join('');
+  };
+  async function abrirCortina() {
+    introAtiva = true;
+    await Promise.race([fontesProntas, new Promise(r => setTimeout(r, 1400))]);
+    if (!introAtiva) return;
+    comecou = true;
+    montarTitulo(true);
+    const T = { tit0: 80, tit1: 680, lin0: 640, lin1: 1560, marc: 1560, fim: 2300 };
+    const nLet = letras.length;
+    letras.forEach((l, i) => { l.ini = T.tit0 + i * (T.tit1 - T.tit0 - 80) / Math.max(1, nLet - 1); l.dur = 80; });
+
+    /* Só anima o que está na tela; o resto já fica pronto abaixo da dobra */
+    const alt = innerHeight;
+    $$('.desc').forEach(d => { if (d.getBoundingClientRect().top < alt + 30) quebrarLinhas(d); });
+    const grupos = $$('.coluna').map(c => $$('.escreve', c)).filter(g => g.length);
+    const agenda = [];
+    const durL = 230;
+    $$('.cabeca .escreve').forEach((el, i) => agenda.push({ el, ini: T.lin0 - 40 + i * 130, dur: 280 }));
+    grupos.forEach(g => {
+      const vis = [];
+      g.forEach(el => { if (el.getBoundingClientRect().top < alt + 30) vis.push(el); else el.classList.add('ja'); });
+      const passo = vis.length > 1 ? (T.lin1 - T.lin0 - 90 - durL) / (vis.length - 1) : 0;
+      vis.forEach((el, i) => agenda.push({ el, ini: T.lin0 + 90 + i * passo, dur: durL }));
+    });
+    agenda.forEach(a => { a.el.style.setProperty('--d', Math.round(a.ini) + 'ms'); a.el.style.setProperty('--dur', a.dur + 'ms'); a.q = a.el.getBoundingClientRect(); });
+
+    po.c = tela(innerWidth, innerHeight); po.c.id = 'po'; po.g = po.c.getContext('2d'); po.g.fillStyle = '#f6f2e7';
+    document.body.append(po.c);
+    const bastao = document.createElement('div'); bastao.className = 'bastao'; bastao.style.opacity = 0; document.body.append(bastao);
+
+    let vivo = true, marcou = false;
+    const t0 = performance.now();
+    raiz.classList.add('escrevendo');
+    concluir = () => {
+      if (!vivo) return;
+      vivo = false; introAtiva = false;
+      raiz.classList.remove('intro', 'escrevendo', 'marcando');
+      $$('.desc').forEach(d => { if (d.dataset.txt) { d.textContent = d.dataset.txt; delete d.dataset.txt; } });
+      $$('.escreve').forEach(e => { e.classList.remove('ja'); e.style.removeProperty('--d'); e.style.removeProperty('--dur'); });
+      bastao.remove();
+      redesenhar();
+      setTimeout(() => po.c.remove(), 600);
+      const fim = () => { if (po.c.isConnected) { pintarPo(); if (po.parts.length) requestAnimationFrame(fim); } };
+      requestAnimationFrame(fim);
+    };
+    const passo = agora => {
+      if (!vivo) return;
+      const t = agora - t0;
+      let ativa = null, pA = 0;
+      for (const l of letras) {
+        const p = lim((t - l.ini) / l.dur);
+        if (p !== l.p) { l.p = p; l.el.style.strokeDashoffset = 1 - p; if (p > 0 && p < 1) { ativa = l; pA = p; } }
+      }
+      if (ativa) {
+        const pt = ativa.el.getPointAtLength(ativa.len * pA), q = svgT.getBoundingClientRect(), x = q.left + (pt.x - vb[0]) * q.width / vb[2], y = q.top + (pt.y - vb[1]) * q.height / vb[3];
+        bastao.style.opacity = 1; bastao.style.transform = `translate(${f1(x)}px,${f1(y)}px) rotate(-58deg)`;
+        soltarPo(x, y, 3);
+      } else if (t > T.tit1) bastao.style.opacity = 0;
+      for (const a of agenda) {
+        const p = (t - a.ini) / a.dur;
+        if (p >= 0 && p < 1 && a.q.top < alt && Math.random() < .5) soltarPo(a.q.left + a.q.width * p, a.q.top + a.q.height * (.25 + Math.random() * .6), 1);
+      }
+      pintarPo();
+      if (!marcou && t >= T.marc) {
+        marcou = true;
+        raiz.classList.add('marcando', 'balancar');
+        desenharMarcas(true);
+        setTimeout(() => raiz.classList.remove('balancar'), 1400);
+      }
+      if (t >= T.fim) { concluir(); return; }
+      requestAnimationFrame(passo);
+    };
+    requestAnimationFrame(passo);
+  }
+
+  /* O chef: aparece no canto, levanta a tampa e só então a comanda abre */
+  const chef = $('#chef'), tampa = $('#tampa'), braco = $('#braco'), mao = $('#mao'), chefN = $('#chef-n');
+  const H0 = [110, 170], H1 = [6, 84], C0 = [30, 208], C1 = [10, 176], S = [76, 162];
+  function pose(p) {
+    const hx = lerp(H0[0], H1[0], p), hy = lerp(H0[1], H1[1], p), cx = lerp(C0[0], C1[0], p), cy = lerp(C0[1], C1[1], p);
+    braco.setAttribute('d', `M${S[0]} ${S[1]}Q${f1(cx)} ${f1(cy)} ${f1(hx)} ${f1(hy)}`);
+    mao.setAttribute('cx', f1(hx)); mao.setAttribute('cy', f1(hy));
+    tampa.setAttribute('transform', `translate(${f1(hx - H0[0])} ${f1(hy - H0[1])}) rotate(${f1(-12 * p)} ${H0[0]} ${H0[1]})`);
+  }
+  const voltaMola = p => { const a = 1.5; p -= 1; return p * p * ((a + 1) * p + a) + 1; };
+  let servico = null, saida = 0;
+  function levantar(dur) {
+    chef.classList.add('levantou');
+    const t0 = performance.now();
+    const v = ag => {
+      const p = lim((ag - t0) / dur);
+      pose(voltaMola(p));
+      if (p < 1 && chef.classList.contains('levantou')) requestAnimationFrame(v);
+    };
+    requestAnimationFrame(v);
+  }
+  function limparChef() {
+    chef.classList.remove('na-cena', 'tracando', 'levantou', 'servindo', 'saindo');
+    pose(0);
+  }
+  function abrirAgora() {
+    if (!servico) return;
+    const { n, bt, timers } = servico;
+    timers.forEach(clearTimeout);
+    servico = null;
+    bt.focus({ preventScroll: true });
+    Kit.abrirModulo(n);
+  }
+  function servir(n, bt) {
+    if (servico) { abrirAgora(); return; }
+    clearTimeout(saida);
+    bt.classList.add('pedido');
+    if (REDUZ) { bt.focus({ preventScroll: true }); Kit.abrirModulo(n); return; }
+    bt.focus({ preventScroll: true });
+    chefN.textContent = n;
+    limparChef();
+    void chef.getBoundingClientRect();
+    chef.classList.add('na-cena', 'tracando');
+    servico = { n, bt, timers: [setTimeout(() => { chef.classList.remove('tracando'); levantar(320); }, 340), setTimeout(abrirAgora, 800)] };
+  }
+  $('#colunas').addEventListener('click', e => {
+    const bt = e.target.closest('.prato-bt');
+    if (!bt) return;
+    concluir();
+    servir(+bt.dataset.n, bt);
+  });
+  $('#continuar').addEventListener('click', () => { concluir(); Kit.continuar(); });
+  document.addEventListener('k-modulo', e => {
+    const n = e.detail, est = Kit.estado(n), painel = $('.k-painel');
+    painel.insertAdjacentHTML('afterbegin', `<div class="cab-comanda">Comanda do prato ${n}</div>`);
+    const car = { feito: 'já comido', atual: 'servindo agora', futuro: '' }[est];
+    if (car) painel.dataset.carimbo = car; else delete painel.dataset.carimbo;
+    clearTimeout(saida);
+    chef.classList.remove('saindo');
+    chefN.textContent = n;
+    if (!chef.classList.contains('levantou')) {
+      chef.classList.add('na-cena', 'levantou');
+      pose(1);
+    }
+    chef.classList.add('servindo');
+  });
+  document.addEventListener('k-fechar', () => {
+    $$('.prato-bt.pedido').forEach(b => b.classList.remove('pedido'));
+    chef.classList.add('saindo');
+    clearTimeout(saida);
+    saida = setTimeout(limparChef, REDUZ ? 0 : 240);
+  });
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape' && servico) {
+      servico.timers.forEach(clearTimeout);
+      servico.bt.classList.remove('pedido');
+      servico = null;
+      limparChef();
+    }
+  });
+
+  /* Economia: nada se mexe com a aula aberta */
+  const aulaEl = $('.k-aula');
+  if (aulaEl) new MutationObserver(() => raiz.classList.toggle('parado', aulaEl.classList.contains('on'))).observe(aulaEl, { attributes: true, attributeFilter: ['class'] });
+
+  /* Mudou o tamanho da tela: redesenha o que depende de medida */
+  let tmr = 0;
+  addEventListener('resize', () => {
+    clearTimeout(tmr);
+    tmr = setTimeout(() => {
+      if (introAtiva) return;
+      if ((innerWidth < 700) !== titDuas) montarTitulo(false);
+      desenharMarcas(false);
+    }, 130);
+  });
+  fontesProntas.then(() => { if (introAtiva && comecou) concluir(); else if (!introAtiva) redesenhar(); });
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('fora', !e.isIntersecting)));
+    $$('.cena,.lampada,.samambaia,.jiboia').forEach(el => io.observe(el));
+  }
+
+  pose(0);
+  const pular = $('#pular');
+  pular.addEventListener('click', () => concluir());
+  addEventListener('keydown', e => { if (introAtiva && e.key === 'Escape') concluir(); });
+  redesenhar();
+  if (!REDUZ) abrirCortina();
+})();
+</script>
+</body>
+</html>

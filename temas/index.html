@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Escolha a aparência do curso</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #101014; color: #f2f2f4; font: 17px/1.55 system-ui, "Segoe UI", sans-serif; }
+  main { max-width: 1320px; margin: 0 auto; padding: 34px clamp(16px, 3vw, 40px) 70px; }
+  h1 { font-size: clamp(30px, 5vw, 52px); line-height: 1.1; margin: 0 0 8px; }
+  main > p { color: #c2c2cb; max-width: 62ch; margin: 0 0 26px; }
+  ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 26px; }
+  a { color: inherit; text-decoration: none; display: block; border-radius: 12px; }
+  a:focus-visible { outline: 3px solid #ffd166; outline-offset: 4px; }
+  .capa { display: block; aspect-ratio: 16 / 10; border-radius: 12px; overflow: hidden; background: #22222a; border: 1px solid #33333d; }
+  img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+  a:hover img { transform: scale(1.04); }
+  strong { display: block; font-size: 21px; margin-top: 10px; line-height: 1.25; }
+  small { display: block; color: #c2c2cb; font-size: 15.5px; margin-top: 2px; }
+  @media (prefers-reduced-motion: reduce) { img { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Escolha a aparência do curso</h1>
+  <p>Oito caminhos diferentes para a página inicial. Toque em um para abrir e clique nos módulos. Dentro de cada tema, as setas embaixo levam ao próximo. O conteúdo e os vídeos ficam como já estão: aqui só muda a aparência.</p>
+  <ol>
+    <li><a href="1-sistema-solar.html"><span class="capa"><img src="capas/1-sistema-solar.jpg" alt="" loading="lazy"></span><strong>1. Sistema solar</strong><small>Cada módulo é um planeta, e você viaja de nave.</small></a></li>
+    <li><a href="2-celula.html"><span class="capa"><img src="capas/2-celula.jpg" alt="" loading="lazy"></span><strong>2. Célula</strong><small>Cada módulo é uma organela, vista ao microscópio.</small></a></li>
+    <li><a href="3-robo-planta.html"><span class="capa"><img src="capas/3-robo-planta.jpg" alt="" loading="lazy"></span><strong>3. Planta do robô</strong><small>Cada módulo é uma peça do agente que você monta.</small></a></li>
+    <li><a href="4-mapa-pixel.html"><span class="capa"><img src="capas/4-mapa-pixel.jpg" alt="" loading="lazy"></span><strong>4. Mapa de videogame</strong><small>Cada módulo é uma fase, em pixel art.</small></a></li>
+    <li><a href="5-oceano.html"><span class="capa"><img src="capas/5-oceano.jpg" alt="" loading="lazy"></span><strong>5. Mergulho no oceano</strong><small>Rolar a página é descer, do barco até o abismo.</small></a></li>
+    <li><a href="6-metro.html"><span class="capa"><img src="capas/6-metro.jpg" alt="" loading="lazy"></span><strong>6. Mapa do metrô</strong><small>Cada módulo é uma estação, em quatro linhas.</small></a></li>
+    <li><a href="7-terminal.html"><span class="capa"><img src="capas/7-terminal.jpg" alt="" loading="lazy"></span><strong>7. Terminal antigo</strong><small>Um monitor dos anos 80, em que dá para digitar de verdade.</small></a></li>
+    <li><a href="8-cardapio.html"><span class="capa"><img src="capas/8-cardapio.jpg" alt="" loading="lazy"></span><strong>8. Cardápio</strong><small>O que não tem nada a ver: os módulos são os pratos de um menu.</small></a></li>
+  </ol>
+</main>
+</body>
+</html>

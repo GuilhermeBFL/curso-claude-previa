@@ -431,7 +431,7 @@ export const AULAS = {
         tempo: '15 minutos',
         antes: 'Aqui nada é alterado: é só olhar. Se você ainda não tem nenhum repositório, faça depois da aula 3.3.',
         passos: [
-          ['Abra o Claude Code na pasta de um projeto seu e cole este pedido:', 'Instale o Gitleaks, se ele ainda não estiver aqui, e rode gitleaks git --redact neste repositório. Não grave relatório dentro do repositório e não altere nada. Para cada achado, me diga o tipo, o arquivo, a linha e se parece real ou alarme falso. Nunca mostre o valor do segredo.', 'O Claude pede permissão para instalar, roda a verificação e mostra uma lista, ou diz que não achou nada.'],
+          ['Abra o Claude Code na pasta de um projeto seu e cole este pedido:', 'Instale o Gitleaks, se ele ainda não estiver aqui, e rode gitleaks git --redact neste repositório. Não grave relatório dentro do repositório e não altere nada. Para cada achado, me diga o tipo, o arquivo, a linha e se parece real ou alarme falso. Nunca mostre o valor do segredo.', 'O Claude instala, pedindo permissão se o seu estiver configurado assim, roda a verificação e mostra uma lista, ou diz que não achou nada.'],
           ['Se não achou nada, pronto: marque este passo.', null, 'Esse é o melhor resultado.'],
           ['Se achou uma chave que parece real, siga a ordem da seção "Se vazar".', null, 'A chave antiga para de funcionar, e o achado deixa de ser perigoso.']
         ],
@@ -530,10 +530,10 @@ export const AULAS = {
         tempo: '15 minutos',
         antes: 'O Claude Code é um agente, então é só observar. Um {{subagente|subagente}} é um ajudante que ele chama para uma parte do trabalho. Abra o Claude Code em uma pasta vazia.',
         passos: [
-          ['Cole este pedido:', 'Escreva em um arquivo plano.md um plano de estudos de uma semana para juros compostos. Depois, chame um subagente para revisar o plano, sem ver como você pensou, e corrija o que ele apontar. Antes de começar, me diga quais passos vai seguir.', 'Ele lista os passos e, antes de criar o arquivo, pede a sua permissão.'],
-          ['Aceite criar o arquivo.', null, 'O arquivo plano.md aparece na pasta.'],
+          ['Cole este pedido:', 'Escreva em um arquivo plano.md um plano de estudos de uma semana para juros compostos. Depois, chame um subagente para revisar o plano, sem ver como você pensou, e corrija o que ele apontar. Antes de começar, me diga quais passos vai seguir.', 'Ele lista os passos e começa. Dependendo da configuração, pede a sua permissão antes de criar o arquivo.'],
+          ['Se ele pedir permissão, aceite.', null, 'O arquivo plano.md aparece na pasta.'],
           ['Observe o momento em que ele chama o subagente.', null, 'Aparece o trabalho do revisor, e depois a correção no arquivo.'],
-          ['Marque este passo quando souber em que momento ele pediu permissão, e por quê.', null, 'Ele pediu antes de alterar algo no seu computador, mas não para pensar.']
+          ['Repare no que ele fez sem perguntar, e marque este passo.', null, 'Para pensar, ele nunca pede. Para alterar algo no seu computador, ele pede, a não ser que o seu Claude Code esteja em um modo que libera tudo. A aula 7.4 mostra como ver e mudar isso.']
         ],
         errado: 'se ele não usar o subagente, peça de novo: "use um subagente para revisar". Se ele não encontrar o subagente, feche e abra o Claude Code.'
       }],

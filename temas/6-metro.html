@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Do zero ao agente: mapa do metrô</title>
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Display:wght@800;900&display=swap">
+<style>
+:root{
+  --k-topo-fundo:#000;--k-topo-texto:#fff;--k-acento:#ffc800;--k-acento-texto:#000;
+  --k-painel-fundo:#fff;--k-painel-texto:#0a0f1a;--k-linha:#d7dde3;
+  --k-titulo:'Big Shoulders Display',Impact,'Arial Narrow',sans-serif;--k-texto:'Barlow',system-ui,sans-serif;--k-raio:6px;
+  --k-leitura-fundo:#fbfcfd;--k-leitura-texto:#161b22;--k-leitura-caixa:#ebeff4;
+  --k-leitura-fundo-noite:#0f141a;--k-leitura-texto-noite:#e7ecf1;--k-leitura-caixa-noite:#1b232d;
+  --rotulo:'Barlow Semi Condensed',Bahnschrift,'Arial Narrow',sans-serif;
+  --fundo:#f4f7f8;--rio:#dfecf5;--tx:#070b12;--tx2:#333d49;--chip:#fff;--chip-borda:#000;
+  --azul:#0b5fd0;--azul-t:#b9d2f3;--rosa:#d3127f;--rosa-t:#f5bddc;--verde:#00a651;--verde-t:#b1e5c9;--laranja:#f25c05;--laranja-t:#fbcfb3;
+}
+html[data-leitura="noite"]{
+  --fundo:#0c1118;--rio:#131c27;--tx:#f2f5f8;--tx2:#c3ccd6;--chip:#18212b;--chip-borda:#5a6673;
+  --azul:#4a94ff;--azul-t:#1d3757;--rosa:#ff4dae;--rosa-t:#4e1d3b;--verde:#25d482;--verde-t:#13402d;--laranja:#ff7f2a;--laranja-t:#4e2c14;
+  --k-painel-fundo:#131a22;--k-painel-texto:#eef2f6;--k-linha:#2c3742;
+}
+.c-B{--c:var(--azul);--t:var(--azul-t);--ct:#fff}
+.c-I{--c:var(--rosa);--t:var(--rosa-t);--ct:#fff}
+.c-F{--c:var(--verde);--t:var(--verde-t);--ct:#000}
+.c-A{--c:var(--laranja);--t:var(--laranja-t);--ct:#000}
+html[data-leitura="noite"] .c-B,html[data-leitura="noite"] .c-I{--ct:#000}
+html[data-leitura="noite"] #bandeira,html[data-leitura="noite"] .placa{box-shadow:0 0 0 1px #5a6673}
+html[data-leitura="noite"] .pilula rect{stroke:#5a6673}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;background:var(--fundo);color:var(--tx);font-family:var(--k-texto);-webkit-text-size-adjust:100%}
+body{overflow-x:hidden;transition:background-color .3s}
+:focus-visible{outline:3px solid #000;outline-offset:2px;box-shadow:0 0 0 2px #fff}
+html[data-leitura="noite"] :focus-visible,.k-topo :focus-visible,.k-troca :focus-visible,.k-aula-barra :focus-visible,.k-painel header :focus-visible,.placa:focus-visible{outline-color:var(--k-acento);box-shadow:none}
+
+/* Barra de cima como placa de estação: preta, com o filete branco */
+.k-topo{box-shadow:inset 0 5px 0 #000,inset 0 7px 0 #fff}
+.k-marca{font-size:25px;font-weight:800;letter-spacing:.01em}
+
+/* Palco */
+#quadro{--s:1;--v:1}
+body[data-modo="pc"] #palco{position:fixed;left:0;right:0;top:var(--k-topo-h);bottom:70px}
+body[data-modo="pc"] #quadro{position:absolute}
+body[data-modo="pc"] .mapa{position:absolute;inset:0;z-index:1}
+body[data-modo="pc"] .cabeca{position:absolute;z-index:3;left:calc(34px*var(--s));top:calc(10px*var(--s))}
+body[data-modo="pc"] .placa{position:absolute;z-index:3;left:calc(198px*var(--s));top:calc(414px*var(--s))}
+body[data-modo="pc"] .legenda{position:absolute;z-index:3;left:calc(198px*var(--s));top:calc(586px*var(--s))}
+h1{width:fit-content;margin:0;font:900 calc(70px*var(--s))/.94 var(--k-titulo);letter-spacing:.004em}
+.frase{margin:calc(6px*var(--s)) 0 calc(11px*var(--s));font:500 max(13px,calc(19px*var(--s)))/1.25 var(--k-texto)}
+.continuar{display:block;min-height:44px;height:calc(50px*var(--s));padding:0 calc(20px*var(--s));font:700 calc(19px*var(--s))/1.1 var(--k-texto);color:#000;background:var(--k-acento);border:calc(3px*var(--s)) solid #000;border-radius:var(--k-raio);cursor:pointer;transition:background-color .15s,color .15s}
+.continuar:hover{background:#000;color:var(--k-acento)}
+
+/* Plaquinha de horário */
+.placa{--f:max(10px,calc(13px*var(--s)));display:block;padding:calc(9px*var(--s)) calc(11px*var(--s)) calc(10px*var(--s));text-align:left;color:#fff;background:#000;border:0;border-radius:var(--k-raio);cursor:pointer}
+.placa-topo{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:calc(6px*var(--s));font:600 max(13px,calc(16px*var(--s)))/1.1 var(--rotulo)}
+.relogio{color:var(--k-acento);font-variant-numeric:tabular-nums}
+.flaps{display:flex;gap:1px}
+.flap{display:grid;place-items:center;width:var(--f);height:calc(var(--f)*1.72);color:var(--k-acento);background:linear-gradient(#2b2f35 0 49%,#000 49% 52%,#22252a 52%);border-radius:2px;font:700 calc(var(--f)*1.38)/1 var(--rotulo)}
+
+/* Legenda */
+.legenda{display:flex;gap:calc(6px*var(--s))}
+.legenda button{display:flex;align-items:center;gap:calc(7px*var(--s));min-height:44px;height:calc(50px*var(--s));padding:0 calc(10px*var(--s));color:var(--tx);background:var(--chip);border:calc(2px*var(--s)) solid var(--chip-borda);border-radius:var(--k-raio);font:700 calc(18px*var(--s))/1 var(--rotulo);white-space:nowrap;cursor:pointer;transition:background-color .15s,color .15s}
+.legenda small{font:500 max(12px,calc(15px*var(--s)))/1 var(--rotulo);color:var(--tx2)}
+.marca{position:relative;display:block;flex:none;width:calc(26px*var(--s));height:calc(9px*var(--s));background:var(--c)}
+.marca::after{content:"";position:absolute;left:50%;top:50%;width:calc(15px*var(--s));height:calc(15px*var(--s));margin:calc(-7.5px*var(--s));background:#fff;border:calc(3px*var(--s)) solid var(--c);border-radius:50%}
+.legenda button:hover{background:color-mix(in srgb,var(--c) 16%,var(--chip))}
+.legenda button[aria-pressed="true"]{color:var(--ct);background:var(--c);border-color:var(--c)}
+.legenda button[aria-pressed="true"] small{color:inherit}
+.legenda button[aria-pressed="true"] .marca{background:var(--ct)}
+.legenda button[aria-pressed="true"] .marca::after{border-color:var(--ct)}
+
+/* Mapa */
+.mapa svg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
+#m-linhas path{fill:none;stroke-linejoin:round}
+.rio{stroke:var(--rio);transition:stroke .3s}
+.casco{stroke:var(--fundo);transition:stroke .3s}
+.traco,.cheio{stroke:var(--c)}
+.tinta{stroke:var(--t);transition:stroke .3s}
+.pontos{stroke:var(--c);stroke-linecap:round}
+.fim{opacity:0}
+.pronto .fim{opacity:1}
+.pronto .traco{opacity:0;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+.l{transition:opacity .25s}
+#palco[data-foco="B"] .l:not(.l-B),#palco[data-foco="I"] .l:not(.l-I),#palco[data-foco="F"] .l:not(.l-F),#palco[data-foco="A"] .l:not(.l-A){opacity:.13}
+#palco[data-foco="B"] .l-B .tinta,#palco[data-foco="I"] .l-I .tinta,#palco[data-foco="F"] .l-F .tinta,#palco[data-foco="A"] .l-A .tinta{stroke:color-mix(in srgb,var(--c) 55%,var(--t))}
+
+#m-estacoes{pointer-events:none}
+.st{cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:transparent}
+.st:focus,.st:focus-visible{outline:none;box-shadow:none}
+.hit,.hit2{fill:transparent;pointer-events:all}
+.foco{fill:none;stroke:#000;stroke-width:3.5;opacity:0}
+.st:focus-visible .foco{opacity:1}
+html[data-leitura="noite"] .foco{stroke:var(--k-acento)}
+.st:focus-visible .hit2{fill:var(--k-acento)}
+.st:focus-visible .rot{fill:#000!important;stroke:none}
+body[data-modo="cel"] .st:focus-visible .hit{fill:#ffc80055;stroke:#000;stroke-width:3}
+body[data-modo="cel"] .st:focus-visible .rot{fill:var(--tx)!important}
+.bola{transform:scale(0);transition:transform .3s cubic-bezier(.3,1.7,.5,1)}
+.st.on .bola{transform:none}
+.aro{fill:#fff;stroke:var(--c);stroke-width:5}
+.meia{fill:none;stroke:var(--c);stroke-width:6}
+.fim-aro{fill:#fff;stroke:var(--c);stroke-width:11}
+.fim-fora{fill:none;stroke:var(--tx);stroke-width:3}
+.onda{fill:none;stroke:var(--c);stroke-width:6;opacity:0;transform-box:fill-box;transform-origin:center}
+.st.on .onda{animation:onda .9s ease-out .2s}
+@keyframes onda{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(2.4)}}
+.num{font:700 15px/1 var(--rotulo);text-anchor:middle;fill:#000}
+.num-fim{font:900 30px/1 var(--k-titulo)}
+.ok{fill:none;stroke:var(--c);stroke-width:3.6;stroke-linecap:round;stroke-linejoin:round}
+.rot{font:600 20px/1 var(--rotulo);fill:var(--tx);paint-order:stroke;stroke:var(--fundo);stroke-width:4px;stroke-linejoin:round;opacity:0;transition:opacity .25s,fill .15s}
+.st.on .rot{opacity:1}
+.st-futuro .rot{fill:var(--tx2)}
+.st-atual .rot{font-weight:700;fill:var(--tx)}
+.rot-fim{font:900 38px/1 var(--k-titulo);fill:var(--tx)!important}
+@media (hover:hover){.st.on:hover .bola{transform:scale(1.34)}.st:hover .rot{fill:var(--tx)}}
+.st.on:focus-visible .bola{transform:scale(1.12)}
+
+/* Trens */
+#m-trens{position:absolute;inset:0;pointer-events:none}
+.trem{position:absolute;left:0;top:0;width:calc(36px*var(--s));height:calc(16px*var(--s));margin:calc(-8px*var(--s)) 0 0 calc(-18px*var(--s));background:var(--c);border-radius:calc(5px*var(--s));box-shadow:0 0 0 calc(2.2px*var(--s)) #fff;will-change:transform;opacity:0;transition:opacity .4s}
+.trem::before{content:"";position:absolute;inset:27% 13%;background:repeating-linear-gradient(90deg,#fff 0 17%,transparent 17% 41.5%)}
+.pronto .trem{opacity:1}
+#voce{position:absolute;left:0;top:0;width:calc(132px*var(--v));height:calc(48px*var(--v));margin:calc(-24px*var(--v)) 0 0 calc(-66px*var(--v));will-change:transform}
+#voce svg{position:static;display:block;overflow:visible}
+.porta-e,.porta-d{transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.aberta .porta-e{transform:translateX(-16px)}
+.aberta .porta-d{transform:translateX(16px)}
+.halo{position:absolute;inset:2% 0 10%;border:calc(4px*var(--v)) solid var(--k-acento);border-radius:calc(18px*var(--v));opacity:0}
+.aberta .halo{animation:halo 1.5s ease-out infinite}
+.clarao{opacity:0}
+.aberta .clarao{animation:clarao 1.1s ease-in-out infinite}
+.lampada{opacity:0}
+.aberta .lampada{animation:pisca 1.1s steps(1) infinite}
+@keyframes halo{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.16,1.5);opacity:0}}
+@keyframes clarao{0%,100%{opacity:0}50%{opacity:.36}}
+@keyframes pisca{0%{opacity:1}50%{opacity:.08}}
+#bandeira{position:absolute;left:0;top:0;pointer-events:none;padding:.14em .46em .18em;color:var(--k-acento);background:#000;border-radius:3px;font:800 calc(25px*var(--s))/1 var(--k-titulo);letter-spacing:.015em;white-space:nowrap;will-change:transform}
+#bandeira::after{content:"";position:absolute;left:50%;bottom:-.3em;margin-left:-.32em;border:.32em solid transparent;border-bottom:0;border-top-color:#000}
+
+/* Painel da estação */
+.k-painel{overflow:hidden}
+.k-painel header{padding:16px 14px 14px 22px;color:#fff;background:#000;box-shadow:inset 0 3px 0 #000,inset 0 5px 0 #fff}
+.k-painel h2{font-size:38px;font-weight:800;line-height:1;padding-top:6px}
+.m-faixa{padding:10px 22px 14px;color:var(--ct);background:var(--c)}
+.m-linha{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 10px;margin-bottom:10px;font:600 15px/1.2 var(--rotulo)}
+.m-linha b{font-size:20px;font-weight:700}
+.m-linha span{padding:3px 8px;color:#fff;background:#000;border-radius:3px;white-space:nowrap}
+.m-trilho{position:relative;display:flex;justify-content:space-between}
+.m-trilho::before{content:"";position:absolute;left:12px;right:12px;top:50%;height:6px;margin-top:-3px;background:currentColor}
+.m-trilho i{position:relative;display:grid;place-items:center;width:30px;height:30px;color:#000;background:#fff;border:3px solid #000;border-radius:50%;font:700 14px/1 var(--rotulo);font-style:normal}
+.m-trilho i.aqui{background:var(--k-acento);transform:scale(1.28)}
+.k-painel .m-faixa + p{padding-top:14px}
+.k-aulas button{min-height:48px;align-items:flex-start}
+.k-aulas .id{flex:0 0 44px;padding:2px 0;color:var(--k-painel-texto);background:var(--t);border-radius:3px;text-align:center;font:700 14px/1.3 var(--rotulo);opacity:1}
+.k-aula h1,.k-aula h2,.k-caixa h3{font-weight:800}
+.k-aula-barra strong{font-size:23px;font-weight:800}
+.k-caixa h3{font-size:24px}
+
+/* Celular: diagrama de linha, como dentro do vagão */
+body[data-modo="cel"] #quadro{max-width:520px;margin:0 auto;padding-top:var(--k-topo-h)}
+body[data-modo="cel"] .cabeca{padding:12px 16px 0}
+body[data-modo="cel"] h1{font-size:clamp(38px,12.4vw,66px)}
+body[data-modo="cel"] .frase{margin:6px 0 10px;font-size:17px}
+body[data-modo="cel"] .continuar{width:100%;height:54px;padding:0 10px;font-size:clamp(16px,4.7vw,19px)}
+body[data-modo="cel"] .placa{--f:min(19px,calc((100vw - 74px)/21));width:calc(100% - 32px);margin:10px 16px 0;padding:8px 10px 10px}
+body[data-modo="cel"] .placa-topo{font-size:16px}
+body[data-modo="cel"] .legenda{display:grid;grid-template-columns:auto minmax(46px,auto) 1fr auto;gap:6px;margin:10px 16px 0}
+body[data-modo="cel"] .legenda button{justify-content:center;flex-direction:column;gap:5px;height:50px;padding:0 8px;font-size:15px;border-width:2px}
+body[data-modo="cel"] .legenda .lin,body[data-modo="cel"] .legenda small{display:none}
+body[data-modo="cel"] .marca{--s:.8}
+body[data-modo="cel"] .mapa{position:relative;margin-top:4px}
+body[data-modo="cel"] .rot{font-size:23px}
+body[data-modo="cel"] .rot-fim{font-size:clamp(34px,10.5vw,42px)}
+.pilula rect{fill:#000}
+.pilula text{font:700 16px/1 var(--rotulo);fill:#fff}
+.pilula circle{fill:var(--c)}
+body[data-modo="cel"] #bandeira{font-size:24px}
+body[data-modo="cel"] #bandeira::after{left:-.28em;bottom:50%;margin:0 0 -.32em;border:.32em solid transparent;border-left:0;border-right-color:#000}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .aberta .lampada{opacity:1}
+}
+</style>
+</head>
+<body>
+<main id="palco">
+  <div id="quadro">
+    <div class="cabeca">
+      <h1>Do zero ao agente</h1>
+      <p class="frase">Programação e Claude para quem nunca leu uma linha de código.</p>
+      <button class="continuar" id="continuar" type="button">Continuar: Git e GitHub, do zero</button>
+    </div>
+    <button class="placa" id="placa" type="button" aria-label="Próxima estação: Git, GitHub e VS Code. Abrir o módulo 3.">
+      <span class="placa-topo"><span>Próxima estação:</span><span class="relogio" id="relogio"></span></span>
+      <span class="flaps" id="flaps" aria-hidden="true"></span>
+    </button>
+    <div class="legenda" id="legenda" role="group" aria-label="Legenda. Escolha uma linha para destacar."></div>
+    <div class="mapa" id="mapa">
+      <svg id="m-linhas" aria-hidden="true"></svg>
+      <div id="m-trens" aria-hidden="true">
+        <div id="voce">
+          <div class="halo"></div>
+          <svg viewBox="0 0 132 48" width="100%" height="100%">
+            <circle cx="30" cy="42" r="5.5" fill="#000"/><circle cx="102" cy="42" r="5.5" fill="#000"/>
+            <g class="pintura">
+              <rect x="2" y="3" width="128" height="37" rx="13" fill="#ffc800"/>
+              <path d="M2 29h128v-2 0 0c0 7-6 13-13 13H15C8 40 2 34 2 27z" fill="#000"/>
+              <rect x="10" y="10" width="20" height="13" rx="3" fill="#000"/><rect x="102" y="10" width="20" height="13" rx="3" fill="#000"/><circle cx="10" cy="33" r="2.6" fill="#fff"/><circle cx="122" cy="33" r="2.6" fill="#fff"/>
+              <rect x="49" y="5" width="34" height="33" fill="#fff"/>
+              <g class="porta-e"><rect x="49" y="5" width="17" height="33" fill="#f0ae00" stroke="#000" stroke-width="1.6"/><rect x="53" y="10" width="9" height="12" rx="2" fill="#000"/></g>
+              <g class="porta-d"><rect x="66" y="5" width="17" height="33" fill="#f0ae00" stroke="#000" stroke-width="1.6"/><rect x="70" y="10" width="9" height="12" rx="2" fill="#000"/></g>
+              <rect class="clarao" x="2" y="3" width="128" height="37" rx="13" fill="#fff"/>
+              <rect x="2" y="3" width="128" height="37" rx="13" fill="none" stroke="#000" stroke-width="3"/>
+            </g>
+            <circle class="lampada" cx="42" cy="9" r="3.6" fill="#e3000f" stroke="#000"/><circle class="lampada" cx="90" cy="9" r="3.6" fill="#e3000f" stroke="#000"/>
+          </svg>
+        </div>
+      </div>
+      <svg id="m-estacoes" role="group" aria-label="Mapa do curso, com 18 estações"></svg>
+      <div id="bandeira" aria-hidden="true">Você</div>
+    </div>
+  </div>
+</main>
+<script src="dados.js"></script><script src="kit.js"></script><script>
+Kit.iniciar({ id: '6-metro' });
+(function () {
+  const $ = s => document.querySelector(s);
+  const CURSO = window.CURSO;
+  const palco = $('#palco'), quadro = $('#quadro'), mapa = $('#mapa'), svgL = $('#m-linhas'), svgE = $('#m-estacoes');
+  const camadaTrens = $('#m-trens'), voce = $('#voce'), bandeira = $('#bandeira');
+  const reduz = matchMedia('(prefers-reduced-motion: reduce)');
+  const PASSO = 3, CASA = Kit.ATUAL;
+
+  const LINHAS = {
+    B: { nome: 'Linha Base', curto: 'Base', faixa: '0 a 4', mods: [0, 1, 2, 3, 4] },
+    I: { nome: 'Linha IA', curto: 'IA', faixa: '5 a 7', mods: [5, 6, 7] },
+    F: { nome: 'Linha Ferramentas', curto: 'Ferramentas', faixa: '8 a 11', mods: [8, 9, 10, 11] },
+    A: { nome: 'Linha Agentes', curto: 'Agentes', faixa: '12 a 17', mods: [12, 13, 14, 15, 16, 17] }
+  };
+  const linhaDe = n => n < 5 ? 'B' : n < 8 ? 'I' : n < 12 ? 'F' : 'A';
+  const INTEG = { 4: 'I', 7: 'F', 9: 'A', 11: 'A', 13: 'B', 15: 'I' }; // estações onde um assunto leva a outro
+
+  // Rede do PC, em unidades do desenho. Os cortes só cruzam trechos horizontais: é ali que a rede estica em telas largas, sem perder os 45 graus.
+  const PC = {
+    W: 1310, H: 640, linha: 14,
+    st: { 0: [56, 556], 1: [56, 466], 2: [135, 341], 3: [330, 262], 4: [470, 262], 5: [555, 347], 6: [640, 432], 7: [725, 517], 8: [805, 437], 9: [885, 357], 10: [975, 267], 11: [1065, 177], 12: [830, 60], 13: [790, 262], 14: [965, 437], 15: [1045, 517], 16: [1150, 517], 17: [1248, 517] },
+    rot: {
+      0: ['start', 24, 7, 'Do zero absoluto'], 1: ['start', 24, 7, 'Vocabulário'], 2: ['start', 24, 14, 'Programação essencial'],
+      3: ['middle', 0, 50, 'Git, GitHub e VS Code'], 4: ['middle', 0, -28, 'Bibliotecas'],
+      5: ['start', 24, -18, 'Como a IA', 'funciona'], 6: ['start', 24, -18, 'Prompts e', 'contexto'], 7: ['end', -28, 12, 'Claude Code', 'completo'],
+      8: ['start', 26, 12, 'Skills'], 9: ['start', 30, 7, 'MCP'], 10: ['start', 24, 14, 'APIs e chaves'], 11: ['start', 30, 7, 'Segurança'],
+      12: ['middle', 0, 36, 'Agentes'], 13: ['start', 30, -20, 'Várias IAs', 'juntas'], 14: ['start', 24, 2, 'Mundo real'],
+      15: ['middle', 0, 42, 'Apps do zero', 'ao ar'], 16: ['middle', 0, 38, 'Qualidade'], 17: ['end', 40, -52, 'Projeto final']
+    },
+    vias: [
+      ['B', 'B', [0, 1, [56, 420], 2, [214, 262], 3, 4]],
+      ['I', 'I', [4, 5, 6, 7]],
+      ['F', 'F', [7, 8, 9, 10, 11]],
+      ['A', 'A', [11, [1065, 100], [1025, 60], 12, [588, 60], 13, 9, 14, 15, 16, 17]],
+      ['RB', 'B', [4, 13], 1],
+      ['RI', 'I', [7, 15], 1]
+    ],
+    cortes: [[250, .2], [400, .35], [1100, .25], [1200, .2]],
+    rio: [[-2400, 400], [170, 400], [248, 478], [900, 478], [1010, 368], [99999, 368]]
+  };
+
+  function geoCel(W) {
+    const T = 86, st = {}, rot = {}, pilulas = [], larg = W - T - 42;
+    let y = 30;
+    for (let n = 0; n < 18; n++) {
+      if (n === 0 || n === 5 || n === 8 || n === 12) { pilulas.push([linhaDe(n), y]); y += 46; }
+      if (n === 3) y += 14;
+      if (n === 17) y += 14;
+      st[n] = [T, y];
+      const t = CURSO[n].t;
+      let q = [t];
+      if (t.length * 10.3 > larg) { const c = t.lastIndexOf(' ', Math.floor(t.length * .62)); q = [t.slice(0, c), t.slice(c + 1)]; }
+      rot[n] = n === 17 ? ['start', 46, 14, t] : ['start', 30, q.length > 1 ? (n === CASA ? 3 : -4) : 8, ...q];
+      y += n === 3 ? 86 : 72;
+    }
+    const ramal = (a, b, x) => { const d = T - x; return [a, [x, st[a][1] + d], [x, st[b][1] - d], b]; };
+    return {
+      W, H: st[17][1] + 150, linha: 12, st, rot, pilulas,
+      vias: [
+        ['B', 'B', [0, 1, 2, 3, 4]], ['I', 'I', [4, 5, 6, 7]], ['F', 'F', [7, 8, 9, 10, 11]], ['A', 'A', [11, 12, 13, 14, 15, 16, 17]],
+        ['RA', 'A', ramal(9, 14, T - 20), 1], ['RI', 'I', ramal(7, 15, T - 40), 1], ['RB', 'B', ramal(4, 13, T - 60), 1]
+      ],
+      cortes: []
+    };
+  }
+
+  const f1 = v => Math.round(v * 10) / 10;
+  function tracar(p, raio) {
+    let d = 'M' + f1(p[0].x) + ' ' + f1(p[0].y), cx = p[0].x, cy = p[0].y;
+    const am = [[cx, cy]];
+    const reta = (x, y) => {
+      const k = Math.max(1, Math.round(Math.hypot(x - cx, y - cy) / PASSO));
+      for (let i = 1; i <= k; i++) am.push([cx + (x - cx) * i / k, cy + (y - cy) * i / k]);
+      cx = x; cy = y;
+    };
+    for (let i = 1; i < p.length; i++) {
+      const v = p[i], q = p[i + 1];
+      if (q && v.n === undefined) {
+        const a = Math.hypot(cx - v.x, cy - v.y), b = Math.hypot(q.x - v.x, q.y - v.y), r = Math.min(raio, a / 2, b / 2);
+        const ex = v.x + (cx - v.x) / a * r, ey = v.y + (cy - v.y) / a * r, sx = v.x + (q.x - v.x) / b * r, sy = v.y + (q.y - v.y) / b * r;
+        d += ' L' + f1(ex) + ' ' + f1(ey) + ' Q' + f1(v.x) + ' ' + f1(v.y) + ' ' + f1(sx) + ' ' + f1(sy);
+        reta(ex, ey);
+        const x0 = cx, y0 = cy, m = Math.max(4, Math.round(r / PASSO) * 2);
+        for (let j = 1; j <= m; j++) { const t = j / m, u = 1 - t; am.push([u * u * x0 + 2 * u * t * v.x + t * t * sx, u * u * y0 + 2 * u * t * v.y + t * t * sy]); }
+        cx = sx; cy = sy;
+      } else { d += ' L' + f1(v.x) + ' ' + f1(v.y); reta(v.x, v.y); }
+    }
+    return { d, am };
+  }
+
+  let g = null, s = 1, modo = '', vNo = CASA, corrida = null, intro = null, trens = [], rolagem = 0, topoMapa = 0;
+  const aula = () => document.querySelector('.k-aula.on');
+
+  function montarGeo() {
+    const pc = innerWidth >= 880 && innerHeight >= 540 && innerWidth / innerHeight >= 1.2;
+    modo = pc ? 'pc' : 'cel';
+    document.body.dataset.modo = modo;
+    document.documentElement.style.overflowY = pc ? '' : 'scroll';
+    let base, ew = 0;
+    if (pc) {
+      const aw = palco.clientWidth, ah = palco.clientHeight;
+      s = Math.min(aw / PC.W, ah / PC.H, 1.9);
+      ew = Math.min(620, Math.max(0, aw / s - PC.W));
+      base = PC;
+      const lw = (PC.W + ew) * s, lh = PC.H * s;
+      quadro.style.cssText = `--s:${s};--v:${s};width:${lw}px;height:${lh}px;left:${(aw - lw) / 2}px;top:${(ah - lh) / 2}px`;
+    } else {
+      s = 1;
+      quadro.style.cssText = '--s:1;--v:.9';
+      base = geoCel(mapa.clientWidth || innerWidth);
+      mapa.style.height = base.H + 'px';
+    }
+    if (pc) mapa.style.height = '';
+    const X = x => x + base.cortes.reduce((a, c) => a + (x > c[0] ? c[1] * ew : 0), 0);
+    const st = {};
+    for (const n in base.st) st[n] = { x: X(base.st[n][0]), y: base.st[n][1], n: +n };
+    g = { W: base.W + ew, H: base.H, st, rot: base.rot, linha: base.linha, pilulas: base.pilulas || [], vias: [], arestas: {} };
+    if (base.rio) { const R = x => x > 400 ? x + .55 * ew : x > 250 ? x + .2 * ew : x; g.rio = tracar(base.rio.map(q => ({ x: Math.min(R(q[0]), g.W + 2400), y: q[1] })), 46).d; }
+    const ponto = it => typeof it === 'number' ? st[it] : { x: X(it[0]), y: it[1] };
+    base.vias.forEach(([id, l, seq, fina]) => {
+      const pts = seq.map(ponto), v = { id, l, fina: !!fina, d: tracar(pts, 22).d, am: [], paradas: [] };
+      let ini = 0, corteFeito = 0;
+      for (let i = 1; i < pts.length; i++) {
+        if (pts[i].n === undefined) continue;
+        const a = pts[ini], b = pts[i], am = tracar(pts.slice(ini, i + 1), 22).am;
+        if (!v.paradas.length) v.paradas.push({ n: a.n, idx: 0 });
+        v.am = v.am.concat(v.am.length ? am.slice(1) : am);
+        v.paradas.push({ n: b.n, idx: v.am.length - 1 });
+        (g.arestas[a.n] = g.arestas[a.n] || []).push({ para: b.n, am });
+        (g.arestas[b.n] = g.arestas[b.n] || []).push({ para: a.n, am: am.slice().reverse() });
+        if (!fina && Kit.estado(a.n) !== 'futuro' && Kit.estado(b.n) !== 'futuro') corteFeito = i;
+        ini = i;
+      }
+      if (corteFeito) v.dFeito = tracar(pts.slice(0, corteFeito + 1), 22).d;
+      if (corteFeito < pts.length - 1) v.dFut = tracar(pts.slice(corteFeito), 22).d;
+      g.vias.push(v);
+      v.paradas.forEach(p => {
+        const e = st[p.n];
+        if (e.ang === undefined) e.ang = poseDe(v.am, p.idx)[2];
+      });
+    });
+  }
+
+  function poseDe(pts, x) {
+    const i = Math.min(pts.length - 2, Math.max(0, Math.floor(x))), k = x - i;
+    const a = pts[Math.max(0, i - 3)], b = pts[Math.min(pts.length - 1, i + 4)];
+    let ang = Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI;
+    if (ang > 90) ang -= 180; else if (ang <= -90) ang += 180;
+    return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * k, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * k, ang];
+  }
+
+  function desenhar() {
+    [svgL, svgE].forEach(el => { el.setAttribute('viewBox', `0 0 ${f1(g.W)} ${g.H}`); });
+    svgL.innerHTML = (g.rio ? `<path class="rio" d="${g.rio}" stroke-width="40"/>` : '') + g.vias.map(v => {
+      const w = v.fina ? g.linha * .46 : g.linha;
+      return `<g class="via c-${v.l} l l-${v.l}" data-via="${v.id}">
+        <path class="casco pena" d="${v.d}" stroke-width="${w + 7}" pathLength="1"/>
+        ${v.dFut ? `<path class="tinta fim" d="${v.dFut}" stroke-width="${w}"/><path class="pontos fim" d="${v.dFut}" stroke-width="${f1(w * .44)}" stroke-dasharray=".01 ${f1(w * 1.4)}"/>` : ''}
+        ${v.dFeito ? `<path class="cheio fim" d="${v.dFeito}" stroke-width="${w}"/>` : ''}
+        <path class="traco pena" d="${v.d}" stroke-width="${w}" pathLength="1"/></g>`;
+    }).join('');
+    const pil = g.pilulas.map(([l, y]) => {
+      const nome = LINHAS[l].nome;
+      return `<g class="pilula c-${l} l l-${l}" transform="translate(116 ${y - 16})"><rect height="30" rx="4"/><circle cx="16" cy="15" r="7"/><text x="30" y="20.5">${nome}</text></g>`;
+    }).join('');
+    svgE.innerHTML = pil + CURSO.map((m, n) => estacaoHTML(m, n)).join('');
+    ajustarToques();
+  }
+
+  function raioDe(n) { return n === 17 ? 30 : INTEG[n] ? 17 : n === CASA ? 13 : 14; }
+
+  function estacaoHTML(m, n) {
+    const e = g.st[n], est = Kit.estado(n), l = linhaDe(n), o = INTEG[n], r = raioDe(n);
+    const situ = est === 'feito' ? 'Concluído' : est === 'atual' ? 'Você está aqui' : 'Ainda não feito';
+    const [anc, dx, dy, ...linhas] = g.rot[n];
+    let bola;
+    if (n === 17) bola = `<circle class="onda" r="40"/><circle class="fim-fora" r="40"/><circle class="fim-aro" r="${r}"/><text class="num num-fim" dy=".36em">17</text>`;
+    else if (o) bola = `<circle class="aro" r="${r}" style="stroke:none"/><path class="meia" d="M0 ${-r}A${r} ${r} 0 0 1 0 ${r}"/><path class="meia c-${o}" d="M0 ${r}A${r} ${r} 0 0 1 0 ${-r}"/>`;
+    else bola = `<circle class="aro" r="${r}"/>`;
+    if (n !== 17) bola += est === 'feito' ? `<path class="ok" d="M-6 .5l4 4.5 8-9.5"/>` : `<text class="num" dy=".36em">${n}</text>`;
+    const texto = linhas.map((t, i) => `<tspan x="${dx}" ${i ? 'dy="22"' : ''}>${t}</tspan>`).join('');
+    const classeO = o ? ` l-${o}` : '';
+    return `<g class="st st-${est} c-${l} l l-${l}${classeO}" data-n="${n}" role="button" tabindex="0" aria-label="Módulo ${n}: ${m.t}. ${LINHAS[l].nome}. ${situ}." transform="translate(${f1(e.x)} ${e.y})">
+      <rect class="hit" rx="8"/><rect class="hit2" rx="5"/><g class="bola">${bola}<circle class="foco" r="${r + (n === 17 ? 16 : 6)}"/></g><text class="rot${n === 17 ? ' rot-fim' : ''}" y="${dy}" text-anchor="${anc}">${texto}</text></g>`;
+  }
+
+  function ajustarToques() {
+    const min = 46 / s;
+    svgE.querySelectorAll('.pilula').forEach(el => { el.querySelector('rect').setAttribute('width', f1(el.querySelector('text').getBBox().width + 40)); });
+    const pos = (q, x0, y0, x1, y1) => { q.setAttribute('x', f1(x0)); q.setAttribute('y', f1(y0)); q.setAttribute('width', f1(x1 - x0)); q.setAttribute('height', f1(y1 - y0)); };
+    svgE.querySelectorAll('.st').forEach(el => {
+      const n = +el.dataset.n, b = el.querySelector('.rot').getBBox(), h = el.querySelector('.hit'), h2 = el.querySelector('.hit2');
+      if (modo === 'cel') {
+        const m = n === CASA ? 56 : 30;
+        pos(h, -32, Math.min(b.y - 3, -m), Math.max(b.x + b.width + 3, g.W - g.st[n].x - 4), Math.max(b.y + b.height + 3, m));
+        pos(h2, 0, 0, 0, 0);
+      } else {
+        const a = Math.max(min, (raioDe(n) + 6) * 2) / 2;
+        if (n === CASA) pos(h, -68, -66, 68, 26); else pos(h, -a, -a, a, a);
+        pos(h2, b.x - 5, b.y - 2, b.x + b.width + 5, b.y + b.height + 2);
+      }
+    });
+  }
+
+  // Trens pequenos: param em cada estação, como um trem de verdade.
+  function criarTrens() {
+    camadaTrens.querySelectorAll('.trem').forEach(t => t.remove());
+    const plano = { B: [1], I: [1], F: [2], A: [1, 6] };
+    trens = [];
+    g.vias.forEach(v => (plano[v.id] || []).forEach((i, k) => {
+      const el = document.createElement('div');
+      el.className = `trem c-${v.l} l l-${v.l}`;
+      camadaTrens.prepend(el);
+      const idx = (v.paradas[i].idx + v.paradas[Math.min(i + 1, v.paradas.length - 1)].idx) / 2;
+      const tr = { el, v, i, dir: k ? -1 : 1, a: idx, b: idx, t: 1, dur: 1, espera: 200 + k * 700 };
+      trens.push(tr);
+      poeTrem(tr, idx, true);
+    }));
+  }
+  function poeTrem(tr, idx, sempre) {
+    const [x, y, a] = poseDe(tr.v.am, idx);
+    if (!sempre && modo === 'cel' && (y + topoMapa < rolagem - 90 || y + topoMapa > rolagem + innerHeight + 90)) return;
+    tr.el.style.transform = `translate3d(${f1(x * s)}px,${f1(y * s)}px,0) rotate(${f1(a)}deg)`;
+  }
+  function moverTrens(dt) {
+    for (const tr of trens) {
+      if (tr.espera > 0) { tr.espera -= dt; continue; }
+      if (tr.t >= 1) {
+        const P = tr.v.paradas;
+        if (tr.i + tr.dir < 0 || tr.i + tr.dir >= P.length) tr.dir *= -1;
+        tr.i += tr.dir;
+        tr.a = tr.b;
+        const n = P[tr.i].n, folga = Math.ceil((raioDe(n) + (n === 17 ? 8 : 4) + 20) / PASSO);
+        tr.b = P[tr.i].idx - Math.sign(P[tr.i].idx - tr.a) * folga;
+        tr.t = 0;
+        tr.dur = Math.max(500, Math.abs(tr.b - tr.a) * PASSO / .17);
+      }
+      tr.t = Math.min(1, tr.t + dt / tr.dur);
+      const k = tr.t < .5 ? 2 * tr.t * tr.t : 1 - 2 * (1 - tr.t) * (1 - tr.t);
+      poeTrem(tr, tr.a + (tr.b - tr.a) * k);
+      if (tr.t >= 1) tr.espera = 450 + Math.random() * 500;
+    }
+  }
+
+  // Trem "Você"
+  function poeVoce(x, y, a) {
+    voce.style.transform = `translate3d(${f1(x * s)}px,${f1(y * s)}px,0) rotate(${f1(a)}deg)`;
+    const v = Math.abs(Math.sin(a * Math.PI / 180));
+    if (modo === 'pc') bandeira.style.transform = `translate3d(${f1(x * s)}px,${f1(y * s - (28 + 44 * v) * s)}px,0) translate(-50%,-100%)`;
+    else bandeira.style.transform = `translate3d(${f1(x * s + 30)}px,${f1(y * s - 39)}px,0) translateY(-50%)`;
+  }
+  const portas = aberta => voce.classList.toggle('aberta', aberta);
+
+  function rota(de, para) {
+    if (de === para) return { pts: [], marcos: [] };
+    const dist = { [de]: 0 }, ant = {}, aberto = new Set(Object.keys(g.st).map(Number));
+    while (aberto.size) {
+      let u = null;
+      aberto.forEach(n => { if (dist[n] !== undefined && (u === null || dist[n] < dist[u])) u = n; });
+      if (u === null || u === para) break;
+      aberto.delete(u);
+      (g.arestas[u] || []).forEach(a => {
+        const d = dist[u] + a.am.length;
+        if (dist[a.para] === undefined || d < dist[a.para]) { dist[a.para] = d; ant[a.para] = { de: u, a }; }
+      });
+    }
+    const trechos = [];
+    for (let n = para; n !== de; n = ant[n].de) trechos.unshift(ant[n].a);
+    let pts = [];
+    const marcos = [];
+    trechos.forEach(a => { pts = pts.concat(pts.length ? a.am.slice(1) : a.am); marcos.push({ idx: pts.length - 1, no: a.para }); });
+    return { pts, marcos };
+  }
+
+  function correr(para, aoChegar) {
+    if (reduz.matches) {
+      vNo = para; corrida = null;
+      const e = g.st[para]; poeVoce(e.x, e.y, e.ang); portas(true);
+      if (aoChegar) aoChegar();
+      return;
+    }
+    let inicio = [], origem = vNo;
+    if (corrida) {
+      const i = Math.floor(corrida.x), prox = corrida.marcos.find(m => m.idx >= i) || corrida.marcos[corrida.marcos.length - 1];
+      inicio = corrida.pts.slice(i, prox.idx + 1);
+      origem = prox.no;
+    }
+    const r = rota(origem, para);
+    const pts = inicio.concat(inicio.length ? r.pts.slice(1) : r.pts);
+    if (pts.length < 2) {
+      corrida = null; vNo = para; portas(true);
+      if (aoChegar) aoChegar();
+      return;
+    }
+    const desloc = inicio.length ? inicio.length - 1 : 0;
+    const marcos = inicio.length ? [{ idx: inicio.length - 1, no: origem }] : [];
+    r.marcos.forEach(m => marcos.push({ idx: m.idx + desloc, no: m.no }));
+    portas(false);
+    const c = pts.length * PASSO * s;
+    corrida = { pts, marcos, x: 0, t: 0, dur: Math.min(1050, Math.max(420, 260 + c * .75)), para, aoChegar };
+  }
+
+  function escolher(n) {
+    terminarIntro();
+    if (n === vNo && !corrida) { Kit.abrirModulo(n); return; }
+    correr(n, () => Kit.abrirModulo(n));
+  }
+
+  // Abertura: as linhas se desenham uma por vez e o trem "Você" vai junto até a estação em que parou.
+  function comecarIntro() {
+    const roteiro = [['B', 520], ['I', 330], ['F', 400], ['A', 640], ['RA', 100], ['RI', 100], ['RB', 100]];
+    let ini = 130;
+    const fases = [];
+    roteiro.forEach(([id, dur]) => {
+      const v = g.vias.find(q => q.id === id);
+      if (!v) return;
+      const penas = [...svgL.querySelectorAll(`[data-via="${id}"] .pena`)];
+      penas.forEach(p => { p.style.strokeDasharray = '1 2'; p.style.strokeDashoffset = '1'; });
+      fases.push({ v, penas, ini, dur, p: -1 });
+      ini += dur;
+    });
+    intro = { fases, t: 0, total: ini };
+    const e = g.st[0];
+    poeVoce(e.x, e.y, e.ang);
+    portas(false);
+  }
+  function marcar(n) { svgE.querySelector(`.st[data-n="${n}"]`)?.classList.add('on'); }
+  function passoIntro(dt) {
+    intro.t += dt;
+    for (const f of intro.fases) {
+      const q = Math.max(0, Math.min(1, (intro.t - f.ini) / f.dur));
+      if (q === f.p) continue;
+      f.p = q;
+      const p = q < .5 ? 2 * q * q : 1 - 2 * (1 - q) * (1 - q);
+      f.penas.forEach(el => { el.style.strokeDashoffset = 1 - p; });
+      const L = p * (f.v.am.length - 1);
+      f.v.paradas.forEach(st => { if (st.idx <= L + 1 && q > 0) marcar(st.n); });
+      if (f.v.id === 'B') {
+        const i3 = f.v.paradas.find(st => st.n === CASA).idx;
+        const pose = poseDe(f.v.am, Math.min(L, i3));
+        poeVoce(pose[0], pose[1], pose[2]);
+        if (L >= i3) portas(true);
+      }
+    }
+    if (intro.t >= intro.total) terminarIntro();
+  }
+  function terminarIntro() {
+    if (!intro) return;
+    intro = null;
+    svgL.querySelectorAll('.pena').forEach(p => { p.style.strokeDasharray = ''; p.style.strokeDashoffset = ''; });
+    CURSO.forEach((m, n) => marcar(n));
+    const e = g.st[vNo];
+    poeVoce(e.x, e.y, e.ang);
+    portas(true);
+    quadro.classList.add('pronto');
+  }
+
+  // Laço único: abertura, trens pequenos e corrida do trem "Você".
+  let ult = 0;
+  function laco(agora) {
+    requestAnimationFrame(laco);
+    const dt = Math.min(50, agora - ult || 16);
+    ult = agora;
+    if (intro) passoIntro(dt);
+    else if (!aula()) moverTrens(dt);
+    if (corrida) {
+      corrida.t = Math.min(1, corrida.t + dt / corrida.dur);
+      const t = corrida.t, k = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      corrida.x = k * (corrida.pts.length - 1);
+      const p = poseDe(corrida.pts, corrida.x);
+      poeVoce(p[0], p[1], p[2]);
+      if (t >= 1) {
+        const c = corrida;
+        corrida = null;
+        vNo = c.para;
+        portas(true);
+        if (c.aoChegar) c.aoChegar();
+      }
+    }
+  }
+
+  // Painel da estação
+  document.addEventListener('k-modulo', ev => {
+    const n = ev.detail, l = linhaDe(n), L = LINHAS[l], p = $('.k-painel'), o = INTEG[n];
+    p.classList.remove('c-B', 'c-I', 'c-F', 'c-A');
+    p.classList.add('c-' + l);
+    const trilho = L.mods.map(m => `<i class="${m === n ? 'aqui' : ''}">${m}</i>`).join('');
+    p.querySelector('header').insertAdjacentHTML('afterend', `<div class="m-faixa"><div class="m-linha"><b>${L.nome}</b>${o ? `<span>Integração: ${LINHAS[o].nome}</span>` : ''}</div><div class="m-trilho" aria-hidden="true">${trilho}</div></div>`);
+  });
+  document.addEventListener('k-fechar', () => { if (vNo !== CASA || corrida) correr(CASA); });
+
+  // Legenda
+  const legenda = $('#legenda');
+  legenda.innerHTML = Object.keys(LINHAS).map(l => {
+    const L = LINHAS[l];
+    return `<button type="button" class="c-${l}" data-l="${l}" aria-pressed="false" aria-label="${L.nome}, módulos ${L.faixa}"><span class="marca"></span><span><span class="lin">Linha </span>${L.curto}</span><small>${L.faixa}</small></button>`;
+  }).join('');
+  legenda.addEventListener('click', ev => {
+    const b = ev.target.closest('button');
+    if (!b) return;
+    const l = b.dataset.l, ligar = palco.dataset.foco !== l;
+    legenda.querySelectorAll('button').forEach(q => q.setAttribute('aria-pressed', ligar && q === b));
+    if (ligar) palco.dataset.foco = l; else delete palco.dataset.foco;
+    if (ligar && modo === 'cel') {
+      const y = g.st[LINHAS[l].mods[0]].y + topoMapa - 150;
+      scrollTo({ top: y, behavior: reduz.matches ? 'auto' : 'smooth' });
+    }
+  });
+
+  // Plaquinha: letras que viram, como painel de estação
+  const ALVO = 'Git, GitHub e VS Code', flaps = $('#flaps');
+  flaps.innerHTML = [...ALVO].map(() => '<span class="flap"></span>').join('');
+  const tiles = [...flaps.children];
+  if (reduz.matches) tiles.forEach((el, i) => { el.textContent = ALVO[i]; });
+  else {
+    const CH = 'ABCDEFGHIJKLMNOPQRSTUVXZ0123456789', t0 = performance.now();
+    const giro = setInterval(() => {
+      const t = performance.now() - t0;
+      let falta = false;
+      tiles.forEach((el, i) => {
+        if (t > 420 + i * 62) { if (el.dataset.ok !== '1') { el.textContent = ALVO[i]; el.dataset.ok = '1'; } }
+        else { falta = true; el.textContent = CH[Math.floor(Math.random() * CH.length)]; }
+      });
+      if (!falta) clearInterval(giro);
+    }, 70);
+  }
+  const relogio = $('#relogio'), hora = () => { relogio.textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); };
+  hora(); setInterval(hora, 20000);
+
+  // Ações
+  $('#continuar').addEventListener('click', () => Kit.continuar());
+  $('#placa').addEventListener('click', () => escolher(CASA));
+  svgE.addEventListener('click', ev => { const st = ev.target.closest('.st'); if (st) escolher(+st.dataset.n); });
+  svgE.addEventListener('keydown', ev => {
+    if (ev.key !== 'Enter' && ev.key !== ' ') return;
+    const st = ev.target.closest('.st');
+    if (st) { ev.preventDefault(); escolher(+st.dataset.n); }
+  });
+  addEventListener('scroll', () => { rolagem = scrollY; }, { passive: true });
+
+  function montarTudo(comIntro) {
+    corrida = null;
+    montarGeo();
+    desenhar();
+    topoMapa = modo === 'cel' ? mapa.getBoundingClientRect().top + scrollY : 0;
+    criarTrens();
+    if (comIntro) comecarIntro();
+    else {
+      intro = null;
+      CURSO.forEach((m, n) => marcar(n));
+      quadro.classList.add('pronto');
+      const e = g.st[vNo];
+      poeVoce(e.x, e.y, e.ang);
+      portas(true);
+    }
+  }
+  let espera, largAnt = innerWidth;
+  addEventListener('resize', () => {
+    clearTimeout(espera);
+    espera = setTimeout(() => {
+      if (modo === 'cel' && innerWidth === largAnt && innerWidth / innerHeight < 1.2) return; // só a barra do navegador mudou
+      largAnt = innerWidth;
+      montarTudo(false);
+    }, 140);
+  });
+  document.fonts?.ready.then(() => { if (g) ajustarToques(); });
+
+  montarTudo(!reduz.matches);
+  if (!reduz.matches) requestAnimationFrame(laco);
+})();
+</script>
+</body>
+</html>

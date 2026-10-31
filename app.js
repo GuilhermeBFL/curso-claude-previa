@@ -171,10 +171,11 @@ function ligarPlayer(raiz, v, aoFim) {
     fmt = novo;
     pl.dataset.formato = novo;
     vid.poster = `midia/${v.id}_${novo}.jpg`;
-    vid.src = `midia/${v.id}_${novo}_v1.mp4`;
+    vid.src = `midia/${v.id}_${novo}_v3.mp4`;
     vid.width = novo === '9x16' ? 1080 : 1920;
     vid.height = novo === '9x16' ? 1920 : 1080;
     vid.addEventListener('loadedmetadata', () => {
+      vid.playbackRate = +(estado.velocidade || 1);
       if (t > 1 && t < v.duracao - 2) vid.currentTime = t;
       if (tocava) vid.play().catch(() => {});
     }, { once: true });
@@ -250,7 +251,8 @@ function ligarPlayer(raiz, v, aoFim) {
     pl.append(e);
   });
   pl.querySelector('.c-volta').addEventListener('click', () => { vid.currentTime = Math.max(0, vid.currentTime - 10); });
-  pl.querySelector('.c-vel').addEventListener('change', e => { vid.playbackRate = +e.target.value; });
+  pl.querySelector('.c-vel').value = estado.velocidade || '1';
+  pl.querySelector('.c-vel').addEventListener('change', e => { estado.velocidade = e.target.value; salvar(); vid.playbackRate = +e.target.value; });
   pl.querySelector('.c-formato').addEventListener('click', () => {
     estado.formato = fmt === '16x9' ? '9x16' : '16x9';
     salvar();
