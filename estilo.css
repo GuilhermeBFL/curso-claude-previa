@@ -213,7 +213,12 @@ pre.codigo { margin: 10px 0 14px; padding: 15px 17px; overflow: auto; background
 .resposta { margin-top: 12px; padding: 12px 15px; background: var(--papel-3); border-radius: 9px; }
 .resposta[hidden] { display: none; }
 .vivo { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.vivo textarea { width: 100%; min-height: 210px; padding: 12px; font-family: var(--mono); font-size: .86rem; background: #17130f; color: #efe6d8; border: 0; border-radius: 9px; resize: vertical; }
+.vivo-cod { margin: 0; min-height: 210px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.vivo-bts { display: flex; flex-wrap: wrap; gap: 8px; }
+.espera { margin: 8px 0 0; font-size: .92rem; color: #e6dccb; }
+.espera strong { color: #ffd08a; }
+.ler-aula { display: none; width: calc(100% - 20px); min-height: 48px; margin: 10px 10px 2px; background: var(--sol); color: #1a120b; border: 0; border-radius: 10px; font-weight: 700; cursor: pointer; }
+@media (max-width: 1180px) { .ler-aula { display: block; } }
 .vivo iframe { width: 100%; min-height: 210px; border: 1px solid var(--linha); background: #fff; border-radius: 9px; }
 table.tab { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: .95rem; line-height: 1.42; }
 .tab-rola { overflow-x: auto; }
@@ -240,7 +245,9 @@ table.tab td:first-child { font-weight: 700; }
 .parsons-linha button:disabled { opacity: .3; cursor: default; }
 .parsons-linha.ok { box-shadow: inset 4px 0 0 #86bd8f; }
 .parsons-linha.no { box-shadow: inset 4px 0 0 #ef8a7b; }
-.lembrar textarea, .minhas-palavras textarea { width: 100%; min-height: 90px; padding: 11px 13px; border: 1.5px solid var(--linha); border-radius: 9px; background: var(--papel); color: var(--texto); font: inherit; font-size: .98rem; resize: vertical; }
+.lembrou { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.lembrou span { flex: 1 1 100%; font-weight: 700; }
+.lembrou-res { margin: 8px 0 0; font-size: .95rem; min-height: 1.4em; }
 .lab { border: 0; background: #1d1712; color: #efe6d8; }
 html[data-tema="noite"] .lab { background: #0f0c09; border: 1px solid var(--linha); }
 .lab h3 { color: #fff; }

@@ -5,7 +5,7 @@ import { VIDEOS } from './dados/videos.js';
 const app = document.getElementById('app');
 const PROG_CHAVE = 'curso.progresso.v1';
 const guardado = (() => { try { return JSON.parse(localStorage.getItem(PROG_CHAVE)) || {}; } catch { return {}; } })();
-const estado = { feitas: guardado.feitas || {}, ultima: guardado.ultima || '3-1', notas: guardado.notas || {}, tempos: guardado.tempos || {}, paradas: guardado.paradas ?? false, formato: guardado.formato || 'auto', tema: guardado.tema || 'dia' };
+const estado = { feitas: guardado.feitas || {}, ultima: guardado.ultima || '3-1', notas: guardado.notas || {}, tempos: guardado.tempos || {}, paradas: guardado.paradas ?? false, formato: guardado.formato || 'auto', tema: guardado.tema || 'dia', revisao: guardado.revisao || {} };
 const salvar = () => { try { localStorage.setItem(PROG_CHAVE, JSON.stringify(estado)); } catch { /* navegação privada */ } };
 document.documentElement.dataset.tema = estado.tema;
 
@@ -27,6 +27,17 @@ function inline(txt) {
   s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   return s;
+}
+function embaralhar(lista, texto) {
+  let h = 7;
+  for (const ch of texto) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const a = [...lista];
+  for (let i = a.length - 1; i > 0; i--) {
+    h = (h * 1664525 + 1013904223) >>> 0;
+    const j = h % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 const min = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const ICONE = {
@@ -89,7 +100,7 @@ function telaInicio() {
     <section class="cabeca">
       <div><h1>Do zero ao agente</h1><p>Programação e tudo o que dá para fazer com o Claude, para quem nunca leu uma linha de código. São 18 portas: cada uma abre com texto, vídeo e prática.</p></div>
       <div><a class="continuar" href="#/aula/${u.id}"><small>Continue de onde parou</small><strong>${esc(u.t)}</strong></a>
-      <button class="revisao-botao" data-acao="revisao">Revisão de hoje: 2 perguntas</button></div>
+      <button class="revisao-botao" data-acao="revisao">Revisão de hoje${perguntasDeRevisao().length ? `: ${perguntasDeRevisao().length}` : ''}</button></div>
     </section>
     <section class="portas" aria-label="Módulos do curso">${portas}</section>
   </main>${barraCelular('/')}`;
@@ -313,20 +324,24 @@ function blocoHTML(b, i, aula) {
     case 'nota': return `<aside class="nota-aviso">${inline(d)}</aside>`;
     case 'lista': return `<ol class="regras">${d.map(x => `<li>${inline(x)}</li>`).join('')}</ol>`;
     case 'fluxo': return `<ol class="fluxo">${d.map(([q, t]) => `<li><strong>${esc(q)}</strong><span>${inline(t)}</span></li>`).join('')}</ol>`;
-    case 'prever': return `<section class="caixa prever"><h3>Preveja antes de ver</h3><p>${inline(d.pergunta)}</p>${codigoHTML(d.codigo)}<button class="botao mostrar">Mostrar o que acontece</button><div class="resposta" hidden>${inline(d.resposta)}${d.vivo ? `<div class="vivo"><textarea aria-label="Código HTML para editar" spellcheck="false">${esc(d.codigo)}</textarea><iframe title="Resultado do código" sandbox></iframe></div><p style="margin:8px 0 0;font-size:.92rem">Agora mude algo no código, como a palavra Comprar, e veja o resultado.</p>` : ''}</div></section>`;
+    case 'prever': return `<section class="caixa prever"><h3>Preveja antes de ver</h3><p>${inline(d.pergunta)}</p>${codigoHTML(d.codigo, false)}<button class="botao mostrar">Mostrar a resposta</button><div class="resposta" hidden>${inline(d.resposta)}${d.vivo ? `<div class="vivo" data-orig="${esc(d.codigo)}"><pre class="codigo vivo-cod"><code style="background:none;padding:0;font-size:1em">${esc(d.codigo)}</code></pre><iframe title="Resultado do código" sandbox></iframe></div><p style="margin:10px 0 6px;font-weight:700">Agora toque para mudar o código e veja o resultado:</p><div class="vivo-bts">${d.vivo.map(([r, c]) => `<button class="botao leve" data-cod="${esc(c)}">${esc(r)}</button>`).join('')}</div>` : ''}</div></section>`;
     case 'tabela': return `<div class="tab-rola"><table class="tab"><thead><tr>${d.colunas.map(c => `<th scope="col">${esc(c)}</th>`).join('')}</tr></thead><tbody>${d.linhas.map(l => `<tr>${l.map(c => `<td>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
-    case 'pergunta': return `<section class="caixa pergunta" data-c="${d.c}"><h3>Pare e responda</h3><p>${inline(d.p)}</p>${d.o.map(([t, e], k) => `<button class="opcao" data-k="${k}" data-e="${esc(e)}">${inline(t)}</button>`).join('')}<div class="explica" aria-live="polite"></div></section>`;
+    case 'pergunta': return `<section class="caixa pergunta" data-c="${d.c}"><h3>${esc(d.titulo || 'Pare e responda')}</h3><p>${inline(d.p)}</p>${embaralhar(d.o.map(([t, e], k) => ({ t, e, k })), d.p).map(o => `<button class="opcao" data-k="${o.k}" data-e="${esc(o.e)}">${inline(o.t)}</button>`).join('')}<div class="explica" aria-live="polite"></div></section>`;
     case 'erros': return `<div class="erros">${d.map(([a, c]) => `<div><strong>${inline(a)}</strong>${inline(c)}</div>`).join('')}</div>`;
     case 'parsons': return `<section class="caixa parsons" data-certo="${esc(JSON.stringify(d.linhas))}" data-notas="${esc(JSON.stringify(d.notas || []))}"><h3>Coloque na ordem</h3><p>${inline(d.p)}</p><div class="linhas"></div><button class="botao cheio conferir" style="margin-top:8px">Conferir a ordem</button><p class="explica" aria-live="polite"></p></section>`;
-    case 'lembrar': return `<section class="caixa lembrar"><h3>Tente lembrar</h3><p>${inline(d.p)}</p><textarea aria-label="Sua resposta" placeholder="Escreva com as suas palavras. Fica salvo neste aparelho."></textarea><div style="margin-top:10px"><button class="botao mostrar">Ver o resumo</button></div><div class="resposta" hidden><strong>Resumo.</strong> ${inline(d.r)}</div></section>`;
-    case 'lab': return `<section class="caixa lab"><h3>Laboratório: ${esc(d.titulo)}</h3><p class="onde">${esc(d.lugar)}, ${esc(d.tempo)}</p>${d.link ? `<a class="botao" href="${esc(d.link[1])}" target="_blank" rel="noopener">${esc(d.link[0])}</a>` : ''}<ol>${d.passos.map(([t, cod], k) => `<li><label><input type="checkbox" data-lab="${i}-${k}"><span>${inline(t)}</span></label>${cod ? codigoHTML(cod, true) : ''}</li>`).join('')}</ol></section>`;
-    case 'quebrado': return `<section class="caixa quebrado"><h3>${esc(d.titulo)}</h3><p>${inline(d.texto)}</p>${codigoHTML(d.codigo)}<p style="font-size:.95rem">Dica: ${inline(d.dica)}</p><button class="botao mostrar">Ver a causa</button><div class="resposta" hidden>${inline(d.resposta)}</div></section>`;
-    case 'fontes': return `<section class="fontes"><h2>Fontes desta aula</h2><p style="margin:0 0 6px;color:var(--texto-2)">Conferidas em 31/10/2026.</p><ul>${d.map(([t, u, n]) => `<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a><small>${esc(n)}</small></li>`).join('')}</ul></section>`;
+    case 'lembrar': return `<section class="caixa lembrar"><h3>Tente lembrar</h3><p>${inline(d.p)}</p><p style="font-size:.95rem;color:var(--texto-2)">Pense na resposta, sem olhar para cima. Você não precisa escrever nada.</p><button class="botao mostrar">Ver a resposta</button><div class="resposta" hidden><strong>Resposta.</strong> ${inline(d.r)}<div class="lembrou"><span>E aí, você lembrou?</span><button class="botao leve" data-dias="7" data-lembrou="Boa. Esta pergunta volta na sua revisão daqui a 7 dias.">Lembrei</button><button class="botao leve" data-dias="3" data-lembrou="Certo. Esta pergunta volta na sua revisão daqui a 3 dias.">Mais ou menos</button><button class="botao leve" data-dias="1" data-lembrou="Sem problema. Esta pergunta volta na sua revisão amanhã.">Não lembrei</button></div><p class="lembrou-res" aria-live="polite"></p></div></section>`;
+    case 'lab': return `<section class="caixa lab" id="s${i}"><h3>Laboratório: ${esc(d.titulo)}</h3><p class="onde">${esc(d.lugar)}, ${esc(d.tempo)}</p>${d.link ? `<a class="botao" href="${esc(d.link[1])}" target="_blank" rel="noopener">${esc(d.link[0])}</a>` : ''}${d.antes ? `<p>${inline(d.antes)}</p>` : ''}<ol>${d.passos.map(([t, cod, espera], k) => `<li><label><input type="checkbox" data-lab="${i}-${k}"><span>${inline(t)}</span></label>${cod ? codigoHTML(cod, true) : ''}${espera ? `<p class="espera"><strong>O que deve acontecer:</strong> ${inline(espera)}</p>` : ''}</li>`).join('')}</ol>${d.errado ? `<p class="espera"><strong>Se der errado:</strong> ${inline(d.errado)}</p>` : ''}</section>`;
+    case 'quebrado': return `<section class="caixa quebrado"><h3>${esc(d.titulo)}</h3><p>${inline(d.texto)}</p>${codigoHTML(d.codigo, false)}<p style="font-size:.95rem">Dica: ${inline(d.dica)}</p><button class="botao mostrar">Ver a causa</button><div class="resposta" hidden>${inline(d.resposta)}</div></section>`;
+    case 'fontes': return `<section class="fontes" id="s${i}"><h2>Fontes desta aula</h2><p style="margin:0 0 6px;color:var(--texto-2)">Conferidas em 31/10/2026.</p><ul>${d.map(([t, u, n]) => `<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a><small>${esc(n)}</small></li>`).join('')}</ul></section>`;
     default: return '';
   }
 }
 function codigoHTML(c, copia = true) {
   return `<pre class="codigo">${copia ? '<button class="copiar">Copiar</button>' : ''}<code style="background:none;padding:0;font-size:1em">${esc(c)}</code></pre>`;
+}
+function mostraHTML(nv, codigo) {
+  nv.querySelector('.vivo-cod code').textContent = codigo;
+  nv.querySelector('iframe').srcdoc = `<!doctype html><meta charset=utf-8><body style="font-family:system-ui;padding:8px">${codigo}`;
 }
 function telaAula(id) {
   const info = aulaPorId(id);
@@ -335,7 +350,7 @@ function telaAula(id) {
   estado.ultima = id;
   salvar();
   const v = VIDEOS[aula.video];
-  const titulos = aula.blocos.map((b, i) => (b[0] === 'h2' ? [i, b[1]] : null)).filter(Boolean);
+  const titulos = aula.blocos.map((b, i) => (b[0] === 'h2' ? [i, b[1]] : b[0] === 'lab' ? [i, 'Laboratório'] : b[0] === 'fontes' ? [i, 'Fontes'] : null)).filter(Boolean);
   const m = info.m;
   const pos = prontas.findIndex(a => a.id === id);
   const ant = prontas[pos - 1], prox = prontas[pos + 1];
@@ -353,7 +368,7 @@ function telaAula(id) {
     </aside>
     <main id="conteudo" style="min-width:0">
       <section class="palco-video" aria-label="Vídeo da aula">
-        <div class="player-grade">${htmlPlayer(v)}${blocoCapitulos(v)}</div>
+        <div class="player-grade">${htmlPlayer(v)}${blocoCapitulos(v)}</div><button class="ler-aula">Ler a aula: ${esc(info.t)}</button>
       </section>
       <article class="folha-texto">
         <div class="coluna">
@@ -361,9 +376,10 @@ function telaAula(id) {
           <h1>${esc(info.t)}</h1>
           <div class="meta-aula"><span>${aula.tempo} minutos com a prática</span><button class="botao leve pular-aula" style="min-height:36px;padding:0 12px">Já sei, quero pular</button></div>
           <p class="abertura">${inline(aula.abertura)}</p>
-          ${aula.blocos.map((b, i) => blocoHTML(b, i, aula)).join('')}
+          ${aula.blocos.map((b, i) => (b[0] === 'fontes' ? '' : blocoHTML(b, i, aula))).join('')}
+          ${aula.fixar ? blocoHTML(['pergunta', { titulo: 'Para fechar', p: 'Qual frase resume melhor esta aula?', o: aula.fixar.o, c: aula.fixar.c }], 'fim', aula) : ''}
           ${transcricao(v)}
-          <section class="caixa minhas-palavras"><h3>Com as suas palavras</h3><p>Escreva uma frase sobre o que ficou desta aula. Explicar é o que fixa.</p><textarea aria-label="Sua frase" data-nota="${id}" placeholder="Fica salvo neste aparelho.">${esc(estado.notas[id] || '')}</textarea></section>
+          ${aula.blocos.map((b, i) => (b[0] === 'fontes' ? blocoHTML(b, i, aula) : '')).join('')}
           <div class="concluir"><span>${estado.feitas[id] ? 'Aula concluída.' : 'Terminou a prática?'}</span><button class="botao cheio marca-feita">${estado.feitas[id] ? 'Desmarcar aula' : 'Marcar como concluída'}</button></div>
           <div class="navega">${ant ? `<a class="botao" href="#/aula/${ant.id}">Aula anterior: ${esc(ant.t)}</a>` : '<span></span>'}${prox ? `<a class="botao cheio" href="#/aula/${prox.id}">Próxima: ${esc(prox.t)}</a>` : ''}</div>
         </div>
@@ -395,11 +411,18 @@ function ligarAula(id) {
       res.hidden = !res.hidden;
       const nv = caixa.querySelector('.vivo');
       if (nv && !res.hidden) {
-        const ta = nv.querySelector('textarea'), fr = nv.querySelector('iframe');
-        const atual = () => { fr.srcdoc = `<!doctype html><meta charset=utf-8><body style="font-family:system-ui;padding:8px">${ta.value}`; };
-        ta.oninput = atual;
-        atual();
+        mostraHTML(nv, nv.dataset.orig);
       }
+    }
+    const bCod = e.target.closest('[data-cod]');
+    if (bCod) mostraHTML(bCod.closest('.resposta').querySelector('.vivo'), bCod.dataset.cod);
+    const lembrou = e.target.closest('[data-lembrou]');
+    if (lembrou) {
+      const cx = lembrou.closest('.resposta');
+      cx.querySelectorAll('[data-lembrou]').forEach(b => b.classList.toggle('cheio', b === lembrou));
+      cx.querySelector('.lembrou-res').textContent = lembrou.dataset.lembrou;
+      const bloco = aula.blocos.find(q => q[0] === 'lembrar');
+      if (bloco) { estado.revisao[id + ':lembrar'] = { p: bloco[1].p, r: bloco[1].r, quando: Date.now() + +lembrou.dataset.dias * 864e5 }; salvar(); }
     }
     const op = e.target.closest('.opcao');
     if (op) {
@@ -446,7 +469,6 @@ function ligarAula(id) {
       ex.innerHTML = ok ? '<strong>Certo.</strong>Essa é a ordem. Leia as notas em cada linha.' : '<strong>Ainda não.</strong>As linhas verdes estão no lugar. Mude as outras e confira de novo.';
     });
   });
-  raiz.querySelectorAll('textarea[data-nota]').forEach(t => t.addEventListener('input', () => { estado.notas[t.dataset.nota] = t.value; salvar(); }));
   raiz.querySelectorAll('input[data-lab]').forEach(c => {
     const k = `${id}:${c.dataset.lab}`;
     c.checked = !!estado.notas['lab' + k];
@@ -458,6 +480,7 @@ function ligarAula(id) {
     render();
   });
   raiz.querySelector('.pular-aula').addEventListener('click', () => abrirProva(id));
+  raiz.querySelector('.ler-aula').addEventListener('click', () => raiz.querySelector('.folha-texto').scrollIntoView());
   // Marcador da seção atual no menu lateral
   const ancoras = [...document.querySelectorAll('.nesta a')];
   if (ancoras.length && 'IntersectionObserver' in window) {
@@ -466,7 +489,7 @@ function ligarAula(id) {
         ancoras.forEach(a => a.classList.toggle('ativa', a.dataset.ancora === en.target.id));
       }
     }, { rootMargin: '-20% 0px -70% 0px' });
-    raiz.querySelectorAll('.coluna h2[id]').forEach(h => obs.observe(h));
+    raiz.querySelectorAll('.coluna [id^="s"]').forEach(h => obs.observe(h));
     limpezas.push(() => obs.disconnect());
   }
   ancoras.forEach(a => a.addEventListener('click', e => {
@@ -492,42 +515,65 @@ function abrirModal(html, aoAbrir) {
   return fechar;
 }
 function perguntasHTML(lista) {
-  return lista.map((q, i) => `<section data-q="${i}" style="margin:12px 0"><p style="margin:0 0 4px;font-weight:700">${esc(q.p)}</p>${q.o.map((o, k) => `<button class="opcao" data-k="${k}">${esc(o)}</button>`).join('')}</section>`).join('');
+  return lista.map((q, i) => `<section data-q="${i}" style="margin:12px 0"><p style="margin:0 0 4px;font-weight:700">${esc(q.p)}</p>${embaralhar(q.o.map((t, k) => ({ t, k })), q.p).map(o => `<button class="opcao" data-k="${o.k}">${esc(o.t)}</button>`).join('')}<p class="explica" aria-live="polite"></p></section>`).join('');
+}
+function responderEm(s, q, aoResponder) {
+  s.addEventListener('click', e => {
+    const b = e.target.closest('.opcao');
+    if (!b || s.dataset.feita) return;
+    s.dataset.feita = '1';
+    const ok = +b.dataset.k === q.c;
+    b.classList.add(ok ? 'certa' : 'errada');
+    s.querySelector(`.opcao[data-k="${q.c}"]`).classList.add('certa');
+    const ex = s.querySelector('.explica');
+    ex.className = `explica ${ok ? 'certa' : 'errada'}`;
+    ex.innerHTML = `<strong>${ok ? 'Certo.' : 'Ainda não.'}</strong>${q.e ? esc(q.e) : ''}`;
+    aoResponder?.(ok);
+  });
 }
 function abrirProva(id) {
   const lista = AULAS[id].prova;
-  abrirModal(`<h2>Mostre que já sabe</h2><p>Acerte as duas e a aula conta como concluída. Sentir que sabe não é o mesmo que saber.</p>${perguntasHTML(lista)}<p class="res" aria-live="polite"></p><button class="botao" data-fechar>Voltar para a aula</button>`, veu => {
-    const acertos = new Set();
-    veu.querySelectorAll('section[data-q]').forEach(s => {
-      const q = lista[+s.dataset.q];
-      s.addEventListener('click', e => {
-        const b = e.target.closest('.opcao');
-        if (!b) return;
-        s.querySelectorAll('.opcao').forEach(o => o.classList.remove('certa', 'errada'));
-        const ok = +b.dataset.k === q.c;
-        b.classList.add(ok ? 'certa' : 'errada');
-        if (ok) acertos.add(s.dataset.q); else acertos.delete(s.dataset.q);
-        if (acertos.size === lista.length) {
+  abrirModal(`<h2>Mostre que já sabe</h2><p>Uma tentativa em cada pergunta. Acertando as duas, a aula conta como concluída.</p>${perguntasHTML(lista)}<p class="res" aria-live="polite"></p><button class="botao" data-fechar>Voltar para a aula</button>`, veu => {
+    let certas = 0, feitas = 0;
+    veu.querySelectorAll('section[data-q]').forEach(s => responderEm(s, lista[+s.dataset.q], ok => {
+      feitas++;
+      if (ok) certas++;
+      if (feitas === lista.length) {
+        const res = veu.querySelector('.res');
+        if (certas === lista.length) {
           estado.feitas[id] = Date.now();
           salvar();
-          veu.querySelector('.res').innerHTML = '<strong>Pode pular.</strong> A aula ficou marcada como concluída.';
+          res.innerHTML = '<strong>Pode pular.</strong> A aula ficou marcada como concluída.';
+        } else res.innerHTML = '<strong>Vale ver a aula.</strong> Assim você fecha o que faltou.';
+      }
+    }));
+  });
+}
+function perguntasDeRevisao() {
+  const hoje = Date.now();
+  return Object.entries(estado.revisao).filter(([, r]) => r.quando <= hoje);
+}
+function abrirRevisao() {
+  const devidas = perguntasDeRevisao();
+  if (devidas.length) {
+    abrirModal(`<h2>Revisão de hoje</h2><p>Pense na resposta antes de tocar. Lembrar sem olhar fixa melhor que reler.</p>${devidas.map(([k, r]) => `<section class="caixa" data-chave="${esc(k)}"><p style="margin:0 0 8px;font-weight:700">${esc(r.p)}</p><button class="botao mostrar-rev">Ver a resposta</button><div class="resposta" hidden>${esc(r.r)}<div class="lembrou"><button class="botao leve" data-rev="7">Lembrei</button><button class="botao leve" data-rev="3">Mais ou menos</button><button class="botao leve" data-rev="1">Não lembrei</button></div></div></section>`).join('')}<button class="botao" data-fechar>Fechar</button>`, veu => {
+      veu.addEventListener('click', e => {
+        const m = e.target.closest('.mostrar-rev');
+        if (m) m.nextElementSibling.hidden = false;
+        const b = e.target.closest('[data-rev]');
+        if (b) {
+          const cx = b.closest('[data-chave]');
+          estado.revisao[cx.dataset.chave].quando = Date.now() + +b.dataset.rev * 864e5;
+          salvar();
+          cx.remove();
         }
       });
     });
-  });
-}
-function abrirRevisao() {
+    return;
+  }
   const lista = [AULAS['3-1'].prova[0], AULAS['11-1'].prova[1]];
-  abrirModal(`<h2>Revisão de hoje</h2><p>Duas perguntas de aulas passadas. Lembrar sem olhar fixa melhor que reler. Elas voltam depois de 1, 7 e 30 dias.</p>${perguntasHTML(lista)}<button class="botao" data-fechar>Fechar</button>`, veu => {
-    veu.querySelectorAll('section[data-q]').forEach(s => {
-      const q = lista[+s.dataset.q];
-      s.addEventListener('click', e => {
-        const b = e.target.closest('.opcao');
-        if (!b) return;
-        s.querySelectorAll('.opcao').forEach(o => o.classList.remove('certa', 'errada'));
-        b.classList.add(+b.dataset.k === q.c ? 'certa' : 'errada');
-      });
-    });
+  abrirModal(`<h2>Revisão de hoje</h2><p>Nada vencendo hoje. Estas duas são um exemplo de como a revisão funciona: as perguntas que você marcar em "Tente lembrar" voltam aqui nos dias seguintes.</p>${perguntasHTML(lista)}<button class="botao" data-fechar>Fechar</button>`, veu => {
+    veu.querySelectorAll('section[data-q]').forEach(s => responderEm(s, lista[+s.dataset.q]));
   });
 }
 function abrirBusca() {
@@ -609,14 +655,14 @@ function telaGlossario() {
 function telaComoFunciona() {
   const itens = [
     ['Texto e vídeo, sempre juntos', 'O vídeo ajuda a entender. O texto é onde está a matéria inteira. Nenhum substitui o outro.'],
-    ['Dois tipos de vídeo', 'Conversas de 2 a 10 minutos para o que é difícil. Explicações de menos de um minuto para um detalhe.'],
+    ['Dois tipos de vídeo', 'Conversas de 2 a 10 minutos para o que é difícil. Explicações curtas, de até 2 minutos, para um detalhe.'],
     ['No PC e no celular', 'No PC, o vídeo é horizontal. No celular, é vertical, e vira horizontal se você girar o aparelho, sem perder o ponto.'],
     ['Preveja antes de ver', 'Todo código começa com uma pergunta. A resposta só aparece depois que você tentou.'],
-    ['Exercício sem digitar', 'Ordenar linhas embaralhadas funciona bem no celular, onde digitar código é ruim.'],
+    ['Nada de escrever', 'Todos os exercícios são de assinalar, ordenar ou tocar. Funciona no PC e no celular.'],
     ['Palavras na margem', 'No PC, o termo técnico aparece explicado na margem do texto. No celular, abre ao toque.'],
-    ['Tentar lembrar', 'No fim da aula, você escreve o que lembra e só então vê o resumo. As perguntas voltam depois de 1, 7 e 30 dias.'],
+    ['Tentar lembrar', 'No fim da aula, você pensa na resposta, toca para ver e marca se lembrou. Nada de escrever. As perguntas voltam nos dias seguintes, conforme o que você marcou.'],
     ['Prática no seu PC', 'Cada aula termina com algo real no Claude Code. Alguns laboratórios já vêm quebrados, para você achar o erro.'],
-    ['Pular só com prova', 'Já sabe? Acerte duas perguntas e a aula conta como concluída.'],
+    ['Pular só com prova', 'Já sabe? Acerte duas perguntas, de primeira, e a aula conta como concluída.'],
     ['Tutor na própria aula', 'Ele responde com base na aula aberta e guia por partes. Nesta prévia, as respostas ainda são prontas.'],
     ['Progresso guardado', 'Fica salvo em cada aparelho. Sincronizar entre PC e celular vira exercício seu no módulo 15.'],
     ['Abre sem internet', 'As aulas que você já abriu continuam disponíveis. Os vídeos precisam de conexão.']
